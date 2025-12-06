@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M0NARQ Cinematic Engine v2</title>
+    <!-- Load Google Fonts: Unbounded for headers and Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Inter:wght@400&display=swap" rel="stylesheet">
+
+    <!-- Three.js and helpers -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- GSAP and ScrollTrigger for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* CSS Variables define our palette and fonts */
+        :root {
+            --c-black: #050505;
+            --c-white: #F4F4F4;
+            --c-orange: #FF3509;
+            --font-header: 'Unbounded', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: var(--font-body);
+            background-color: var(--c-black);
+            color: var(--c-white);
+        }
+
+        /* 3D canvas container fixed behind all scroll content */
+        #scene-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Scroll container holds our narrative story sections */
+        #scroll-container {
+            position: relative;
+            width: 100%;
+            z-index: 10;
+        }
+
+        /* General section styling */
+        .story-section {
+            width: 100%;
+            position: relative;
+            min-height: 400vh; /* large height to allow scroll progress */
+        }
+        .story-content {
+            position: sticky;
+            top: 30vh;
+            left: 10%;
+            width: 80%;
+            max-width: 900px;
+            pointer-events: none;
+        }
+        .story-content h1 {
+            font-family: var(--font-header);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            line-height: 0.9;
+            font-size: clamp(2rem, 8vw, 5rem);
+            margin-bottom: 0.5rem;
+        }
+        .story-content h3 {
+            font-family: var(--font-header);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            color: var(--c-orange);
+            margin-bottom: 1rem;
+        }
+        .story-content p {
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 500px;
+            color: rgba(244, 244, 244, 0.7);
+            margin-bottom: 1.2rem;
+        }
+        .story-content .note {
+            font-size: 0.8rem;
+            color: rgba(244, 244, 244, 0.5);
+            margin-top: 0.5rem;
+        }
+        .story-content .cta {
+            display: inline-block;
+            font-family: var(--font-header);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.8rem;
+            color: var(--c-orange);
+            text-decoration: none;
+            border-bottom: 2px solid var(--c-orange);
+            padding-bottom: 0.2rem;
+            margin-top: 1.5rem;
+        }
+        .story-content .cta:hover {
+            color: var(--c-white);
+            border-color: var(--c-white);
+        }
+
+        /* White card overlay for the traditional layout section */
+        #white-card {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: -50%;
+            width: 40%;
+            background-color: var(--c-white);
+            color: var(--c-black);
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 500px;
+        }
+        #white-card h2 {
+            font-family: var(--font-header);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 0.9;
+            font-size: 2rem;
+            color: var(--c-black);
+            margin-bottom: 1rem;
+        }
+        #white-card p {
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: rgba(5,5,5,0.8);
+        }
+
+        /* Optional hidden sections for erosion narrative can have similar styling */
+    </style>
+</head>
+<body>
+    <!-- Fixed 3D scene -->
+    <div id="scene-container"></div>
+
+    <!-- Scrollable content container -->
+    <div id="scroll-container">
+        <!-- Flood narrative section -->
+        <section id="flood-story" class="story-section">
+            <div class="story-content">
+                <div class="narrative-block" id="flood-block-0">
+                    <h3>Eyes Wide Open</h3>
+                    <h1>Rivers rise overnight</h1>
+                    <p>Water moves, and we watch. FloodSight’s radar eye sees walls of water upstream before they flood villages downstream. Sentinel‑1 provides all‑weather, day‑and‑night radar imaging for land, ocean and emergency services【678660299316260†L24-L29】.</p>
+                    <p class="note">(All‑weather radar imaging mission【678660299316260†L24-L29】)</p>
+                </div>
+                <div class="narrative-block" id="flood-block-1">
+                    <h3>Global Scale. Local Precision.</h3>
+                    <h1>Learning before the flood</h1>
+                    <p>Pre‑trained on millions of satellite images, our foundation model already understands land cover, water bodies and vegetation cycles. Multi‑sensor fusion combines radar and optical data to achieve near‑total weather coverage.</p>
+                    <p class="note">(99% weather coverage through modality fusion)</p>
+                </div>
+                <div class="narrative-block" id="flood-block-2">
+                    <h3>From Pixels to Policy</h3>
+                    <h1>Physics keeps us honest</h1>
+                    <p>A vision transformer augmented with shallow‑water physics ensures our predictions obey the laws of nature. Evidential deep learning quantifies uncertainty, so responders know when to trust the map and when to inspect on the ground.</p>
+                    <p class="note">(87% fewer false positives thanks to physics constraints)</p>
+                </div>
+                <div class="narrative-block" id="flood-block-3">
+                    <h3>Ground Truth</h3>
+                    <h1>Pixel to SMS</h1>
+                    <p>Flood maps reach farmers and families in hours, not days. Extra lead time means beds are lifted, seeds are stashed, and cattle are moved to higher ground. Compute costs are negligible; the benefits are priceless.</p>
+                    <p class="note">(Buffer time: two extra sunrises for evacuation)</p>
+                </div>
+            </div>
+            <!-- White card for traditional layout appears mid‑way -->
+            <div id="white-card">
+                <h2>Foundation Model</h2>
+                <p>SatMAE sees Earth before it sees floods. Pre‑trained on over a million satellite images, it recognizes rivers, fields and forests. When a storm approaches, it only needs a few examples to learn where water will go.</p>
+            </div>
+        </section>
+
+        <!-- Erosion narrative section (ShoreWatch) -->
+        <section id="erosion-story" class="story-section">
+            <div class="story-content">
+                <div class="narrative-block" id="erosion-block-0">
+                    <h3>Eyes Wide Open</h3>
+                    <h1>Coasts remember</h1>
+                    <p>Thirty years of Landsat and Sentinel imagery reveal erosion rates, accretion zones and cyclone scars. Patterns in history point to tomorrow’s shoreline.</p>
+                    <p class="note">(Each pixel has a 34‑year memory)</p>
+                </div>
+                <div class="narrative-block" id="erosion-block-1">
+                    <h3>Global Scale. Local Precision.</h3>
+                    <h1>Seeing beyond pixels</h1>
+                    <p>Sub‑pixel enhancement acts like glasses for our planet. We see beaches smaller than a pixel and predict whether a house on stilts will stand through one more monsoon. Physics on GPU simulates sediment transport, learning local sand grain behaviour from decades of data.</p>
+                    <p class="note">(RMSE &lt;5 m; half a bus length of precision)</p>
+                </div>
+                <div class="narrative-block" id="erosion-block-2">
+                    <h3>From Pixels to Policy</h3>
+                    <h1>Prepared for storms</h1>
+                    <p>Cyclone scenarios integrate NOAA track forecasts with local bathymetry. Simulate storm surge propagation and identify at‑risk coast segments 48 hours ahead. Insurance triggers are priced by the metre, with payouts automated when erosion crosses a threshold.</p>
+                    <p class="note">(Evacuation zones refined per storm, not per decade)</p>
+                </div>
+                <div class="narrative-block" id="erosion-block-3">
+                    <h3>Ground Truth</h3>
+                    <h1>Future coastline within reach</h1>
+                    <p>Our models predict the coastline five years out within 15 metres. Land use planners know where to build. Insurers know what to cover. Families know when to move.</p>
+                    <p class="note">(Updated quarterly; municipality dashboards available)</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript that sets up the 3D scene and scroll‑driven animations -->
+    <script>
+    // Register ScrollTrigger with GSAP
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Set up Three.js scene
+    const sceneContainer = document.getElementById('scene-container');
+    const scene = new THREE.Scene();
+
+    // Camera with perspective; positioned to provide a cinematic starting point
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(3, 1, 12);
+    camera.lookAt(0, 0, 0);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    sceneContainer.appendChild(renderer.domElement);
+
+    // Responsive resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0x444444);
+    scene.add(ambient);
+    const directional = new THREE.DirectionalLight(0xffffff, 1.0);
+    directional.position.set(5, 3, 5);
+    scene.add(directional);
+
+    // Load textures for Earth. You can replace these with your own high‑resolution maps (.jpg or .webp recommended).
+    const textureLoader = new THREE.TextureLoader();
+    const earthMap = textureLoader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
+    const earthNormalMap = textureLoader.load('https://threejsfundamentals.org/threejs/resources/images/earth-normal.jpg');
+
+    // Create Earth sphere with normal map for subtle relief
+    const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
+    const earthMaterial = new THREE.MeshStandardMaterial({ map: earthMap, normalMap: earthNormalMap });
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earth);
+
+    // Atmosphere: optional thin glow; here we use a second sphere with low opacity
+    const atmosphereGeo = new THREE.SphereGeometry(5.05, 64, 64);
+    const atmosphereMat = new THREE.MeshLambertMaterial({ color: 0x2266ff, transparent: true, opacity: 0.3 });
+    const atmosphere = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+    scene.add(atmosphere);
+
+    // Stars: create a dense point field
+    const starsGeometry = new THREE.BufferGeometry();
+    const starCount = 5000;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        const distance = 200 + Math.random() * 300;
+        starPositions[i * 3] = distance * Math.sin(phi) * Math.cos(theta);
+        starPositions[i * 3 + 1] = distance * Math.cos(phi);
+        starPositions[i * 3 + 2] = distance * Math.sin(phi) * Math.sin(theta);
+    }
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.9 });
+    const starField = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(starField);
+
+    // Sentinel‑2 proxy satellite: create a simple group with gold body and dark blue panels
+    function createSatellite() {
+        const satGroup = new THREE.Group();
+        // Body
+        const bodyGeo = new THREE.BoxGeometry(0.6, 0.6, 1.0);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xccaa00, metalness: 1.0, roughness: 0.3 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        satGroup.add(body);
+        // Panels
+        const panelGeo = new THREE.BoxGeometry(0.1, 0.8, 2.5);
+        const panelMat = new THREE.MeshStandardMaterial({ color: 0x112255, metalness: 0.2, roughness: 0.2 });
+        const panelL = new THREE.Mesh(panelGeo, panelMat);
+        panelL.position.set(-0.8, 0, 0);
+        satGroup.add(panelL);
+        const panelR = panelL.clone();
+        panelR.position.set(0.8, 0, 0);
+        satGroup.add(panelR);
+        // Optional dish or sensor
+        const dishGeo = new THREE.CylinderGeometry(0.15, 0.35, 0.4, 32, 1, true);
+        const dishMat = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.4, roughness: 0.3 });
+        const dish = new THREE.Mesh(dishGeo, dishMat);
+        dish.rotation.z = Math.PI / 2;
+        dish.position.set(0, 0.2, 0.8);
+        satGroup.add(dish);
+        return satGroup;
+    }
+    const satellite = createSatellite();
+    // Position satellite near camera initially
+    satellite.position.set(3, 1, 10);
+    scene.add(satellite);
+
+    // Function to convert lat/lon to 3D coordinates on sphere of given radius
+    function latLonToVector3(lat, lon, radius) {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        const x = -radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.cos(phi);
+        const z = radius * Math.sin(phi) * Math.sin(theta);
+        return new THREE.Vector3(x, y, z);
+    }
+    // Compute Bangladesh coordinate scaled slightly above the surface for zoom
+    const bangladesh = latLonToVector3(23.6850, 90.3563, 5 * 1.2);
+
+    // Animation variables
+    let clock = new THREE.Clock();
+    // Animate sentinel rotation independently of scroll
+    function updateScene() {
+        requestAnimationFrame(updateScene);
+        const delta = clock.getDelta();
+        // Rotate Earth slowly on its Y axis
+        earth.rotation.y += delta * 0.02;
+        // Rotate satellite slowly for subtle motion
+        satellite.rotation.y += delta * 0.5;
+        renderer.render(scene, camera);
+    }
+    updateScene();
+
+    /*
+     * Scroll‑driven Timelines
+     * The floodTimeline controls camera and object movement during the Flood narrative.
+     * The erosionTimeline controls the second narrative.
+     */
+
+    // Flood narrative timeline
+    const floodTl = gsap.timeline({
+        scrollTrigger: {
+            trigger: '#flood-story',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1.5,
+            pin: true
+        }
+    });
+    // Segment 0‑25%: inspect satellite; slowly drift camera; rotate and move satellite
+    floodTl.to(satellite.position, { z: 5, duration: 0.25, ease: 'power1.inOut' }, 0);
+    floodTl.to(satellite.rotation, { y: Math.PI * 2, duration: 0.25, ease: 'power1.inOut' }, 0);
+    // Segment 25‑50%: move camera to reveal full Earth view
+    floodTl.to(camera.position, { x: 0, y: 0, z: 15, duration: 0.25, ease: 'power1.inOut', onUpdate: () => camera.lookAt(0, 0, 0) }, 0.25);
+    // Segment 50‑75%: pan camera left, rotate Earth to face camera, bring white card
+    floodTl.to(camera.position, { x: -4, y: 1, z: 12, duration: 0.25, ease: 'power1.inOut', onUpdate: () => camera.lookAt(0, 0, 0) }, 0.5);
+    floodTl.to(earth.rotation, { y: earth.rotation.y + 2, duration: 0.25, ease: 'power1.inOut' }, 0.5);
+    floodTl.to('#white-card', { xPercent: -120, duration: 0.25, ease: 'power1.out' }, 0.5);
+    // Segment 75‑100%: zoom to Bangladesh, fade stars and atmosphere
+    floodTl.to(camera.position, {
+        x: bangladesh.x,
+        y: bangladesh.y,
+        z: bangladesh.z,
+        duration: 0.25,
+        ease: 'power1.inOut',
+        onUpdate: () => {
+            camera.lookAt(earth.position);
+        }
+    }, 0.75);
+    floodTl.to(atmosphere.material, { opacity: 0.2, duration: 0.25, ease: 'power1.inOut' }, 0.75);
+    floodTl.to(starField.material, { opacity: 0.2, duration: 0.25, ease: 'power1.inOut' }, 0.75);
+    floodTl.to('#white-card', { opacity: 0, duration: 0.25, ease: 'power1.inOut' }, 0.75);
+
+    // Erosion narrative timeline
+    const erosionTl = gsap.timeline({
+        scrollTrigger: {
+            trigger: '#erosion-story',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1.5,
+            pin: true
+        }
+    });
+    // Erosion segment 0‑25%: reset camera for new narrative; show Earth rotated differently
+    erosionTl.to(camera.position, { x: 2, y: 1, z: 14, duration: 0.25, ease: 'power1.inOut', onUpdate: () => camera.lookAt(0, 0, 0) }, 0);
+    // Rotate Earth to highlight coastlines (approx 90 degrees)
+    erosionTl.to(earth.rotation, { y: earth.rotation.y + Math.PI / 2, duration: 0.25, ease: 'power1.inOut' }, 0);
+    // Erosion segment 25‑50%: zoom slightly closer and tilt down to coastline
+    erosionTl.to(camera.position, { x: 1, y: -2, z: 10, duration: 0.25, ease: 'power1.inOut', onUpdate: () => camera.lookAt(0, 0, 0) }, 0.25);
+    // Erosion segment 50‑75%: pan camera left and prepare for traditional overlay; reuse white card with different content (we can update content via innerHTML if needed)
+    erosionTl.to(camera.position, { x: -3, y: -1, z: 11, duration: 0.25, ease: 'power1.inOut', onUpdate: () => camera.lookAt(0, 0, 0) }, 0.5);
+    // Move white card back into view; update its text via GSAP callback if desired
+    erosionTl.to('#white-card', { xPercent: 0, opacity: 1, duration: 0.25, ease: 'power1.out' }, 0.5);
+    // Erosion segment 75‑100%: final impact zoom back to Bangladesh or coastline; fade atmosphere further
+    erosionTl.to(camera.position, {
+        x: bangladesh.x * 1.05,
+        y: bangladesh.y * 1.05,
+        z: bangladesh.z * 1.05,
+        duration: 0.25,
+        ease: 'power1.inOut',
+        onUpdate: () => camera.lookAt(earth.position)
+    }, 0.75);
+    erosionTl.to(atmosphere.material, { opacity: 0.1, duration: 0.25, ease: 'power1.inOut' }, 0.75);
+    erosionTl.to(starField.material, { opacity: 0.1, duration: 0.25, ease: 'power1.inOut' }, 0.75);
+
+    /*
+     * Developer instructions for integrating external GLB resources and higher‑fidelity assets:
+     *
+     * 1. Loading a GLB satellite model:
+     *    - Include GLTFLoader from the Three.js examples: <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/loaders/GLTFLoader.js"></script>.
+     *    - Replace the procedural satellite created by createSatellite() with a call to GLTFLoader:
+     *      const gltfLoader = new THREE.GLTFLoader();
+     *      gltfLoader.load('path/to/your/sentinel.glb', (gltf) => {
+     *          satellite = gltf.scene;
+     *          satellite.scale.set(0.5, 0.5, 0.5);
+     *          scene.add(satellite);
+     *      });
+     *    - Adjust material roughness/metalness as needed to match the "Aerospace Industrial" look.
+     *
+     * 2. Enhancing the Earth appearance:
+     *    - Replace earthMap and earthNormalMap with high‑resolution albedo and normal textures (JPG or WEBP). A specular map can also be added via the 'metalnessMap' or 'roughnessMap' for more realistic oceans.
+     *    - For an atmosphere glow with Fresnel, implement a custom shader on a larger sphere; several tutorials online demonstrate this technique. Alternatively, use a pre‑built atmosphere shader from Three.js examples.
+     *
+     * 3. Adjusting the flight path:
+     *    - Use the latLonToVector3() helper to compute 3D positions for any geographic coordinate. Multiply by a factor (>1) to position the camera slightly above the surface.
+     *    - Modify the GSAP timelines (floodTl, erosionTl) to interpolate camera.position between these vectors.
+     */
+    </script>
+</body>
+</html>
