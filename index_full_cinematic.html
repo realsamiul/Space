@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>M0NARQ · Cinematic Narratives</title>
+
+    <!-- Google Fonts for headline and body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Three.js core and helper modules -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- GSAP for smooth animations with scroll support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* Design system: colours, fonts and basic resets */
+        :root {
+            --c-black: #050505;
+            --c-white: #F4F4F4;
+            --c-orange: #FF3509;
+            --font-header: 'Unbounded', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow-x: hidden; background: var(--c-black); color: var(--c-white); font-family: var(--font-body); }
+
+        /* Fixed 3D scene container */
+        #scene-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        /* Scroll container overlays the scene; each module section is as tall as needed to allow scroll progress */
+        #scroll-container { position: relative; z-index: 10; width: 100%; }
+        .story-section { position: relative; width: 100%; min-height: 300vh; }
+        .story-content { position: sticky; top: 25vh; width: 80%; max-width: 900px; margin: 0 auto; pointer-events: none; }
+        .narrative-block { margin-bottom: 60vh; }
+        /* Typography */
+        .narrative-block h3 { font-family: var(--font-header); font-weight: 700; font-size: clamp(0.8rem, 2vw, 1.2rem); letter-spacing: 0.1em; color: var(--c-orange); margin-bottom: 1rem; text-transform: uppercase; }
+        .narrative-block h1 { font-family: var(--font-header); font-weight: 800; font-size: clamp(1.8rem, 8vw, 3.5rem); letter-spacing: -0.02em; line-height: 0.9; margin-bottom: 1rem; text-transform: uppercase; }
+        .narrative-block p { font-family: var(--font-body); font-weight: 400; font-size: 1rem; line-height: 1.6; color: rgba(244,244,244,0.8); max-width: 600px; margin-bottom: 1rem; }
+        .narrative-block .note { font-size: 0.8rem; color: rgba(244,244,244,0.5); margin-top: -0.5rem; }
+        code { font-family: 'JetBrains Mono', monospace; background: rgba(255,255,255,0.05); padding: 0.2rem 0.4rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <!-- 3D scene placeholder -->
+    <div id="scene-container"></div>
+    <!-- Scrollable narrative content -->
+    <div id="scroll-container">
+        <!-- FloodSight narrative: eight panels -->
+        <section id="module-flood" class="story-section">
+            <div class="story-content">
+                <div class="narrative-block" id="flood-0">
+                    <h3>FloodSight · Satellite Intelligence</h3>
+                    <h1>Water Moves. We Watch.</h1>
+                    <p>Rivers rise ten metres overnight. Hawkeye sees water walls upstream before they reach villages downstream.</p>
+                    <p class="note">(Sentinel‑1 radar · 15 spectral channels · Warnings ≈66 h sooner)</p>
+                </div>
+                <div class="narrative-block" id="flood-1">
+                    <h3>The Challenge</h3>
+                    <h1>"72 Hours" Means "Too Late"</h1>
+                    <p>Classic workflow: satellite shoots → data queues → analyst draws polygons. Village is ankle‑deep when file hits WhatsApp.</p>
+                    <p class="note">(Every hour lost adds ≈0.5% to expected crop damage)</p>
+                </div>
+                <div class="narrative-block" id="flood-2">
+                    <h3>Foundation Model</h3>
+                    <h1>SatMAE Sees Earth Before It Sees Floods</h1>
+                    <p>Pre‑trained on over a million satellite images. The model already understands land cover, water bodies and vegetation cycles. We fine‑tune for floods.</p>
+                    <p class="note">(Transfer learning cuts training from weeks to days)</p>
+                </div>
+                <div class="narrative-block" id="flood-3">
+                    <h3>Multi‑Spectral Fusion</h3>
+                    <h1>Seeing Through Monsoon Clouds</h1>
+                    <p>SAR radar penetrates storms. Optical adds spectral detail. AI learns when to trust each sensor—achieving 99% weather coverage.</p>
+                    <p class="note">(Modality dropout during training = robustness at inference)</p>
+                </div>
+                <div class="narrative-block" id="flood-4">
+                    <h3>The Engine</h3>
+                    <h1>Vision Transformer + Shallow‑Water Physics</h1>
+                    <p>AI knows river shape and is taught flood dynamics. Physics constrains predictions—water obeys gravity, and so does our model.</p>
+                    <p class="note">(AI draws only gravity‑allowed water. 87% fewer false positives)</p>
+                </div>
+                <div class="narrative-block" id="flood-5">
+                    <h3>Physics Layer</h3>
+                    <h1>∂h/∂t + ∇·(hv) = P − I</h1>
+                    <p>Mass continuity and momentum conservation, solved as a differentiable layer. Water depth, velocity fields and terrain gradients are computed end‑to‑end.</p>
+                    <p class="note">(No hallucinations. Water doesn't teleport across ridges)</p>
+                </div>
+                <div class="narrative-block" id="flood-6">
+                    <h3>Uncertainty Quantification</h3>
+                    <h1>Know What You Don't Know</h1>
+                    <p>Evidential deep learning separates sensor noise from novel terrain. High epistemic uncertainty triggers human review.</p>
+                    <p class="note">(Responders trust maps with confidence intervals)</p>
+                </div>
+                <div class="narrative-block" id="flood-7">
+                    <h3>Impact</h3>
+                    <h1>Pixel to SMS in 6 Hours</h1>
+                    <p>Buffer time for 300,000 people to lift beds, stash seeds, move cattle and walk to high ground. Two extra sunrises for evacuation.</p>
+                    <p class="note">(Compute cost: ≈$0.004/km²)</p>
+                </div>
+            </div>
+        </section>
+        <!-- Omega narrative: eight panels -->
+        <section id="module-omega" class="story-section">
+            <div class="story-content">
+                <div class="narrative-block" id="omega-0">
+                    <h3>Omega · Disease Intelligence</h3>
+                    <h1>Fever Has a Rhythm. Predict the Next Beat.</h1>
+                    <p>Mosquitoes breed with monsoon; markets swell with Eid. Omega tells clinics when to double beds.</p>
+                    <p class="note">(Temporal Fusion Transformer + Neural‑SEIR · 14‑day forecast horizon)</p>
+                </div>
+                <div class="narrative-block" id="omega-1">
+                    <h3>The Problem</h3>
+                    <h1>Outbreaks Surprise Those Who Wait</h1>
+                    <p>Traditional surveillance lags two to three weeks. By the time cases spike, hospital beds are full and supply chains are stressed.</p>
+                    <p class="note">(Dengue cases in Bangladesh tripled 2019‑2023)</p>
+                </div>
+                <div class="narrative-block" id="omega-2">
+                    <h3>Data Fusion</h3>
+                    <h1>Weather + Movement + Social Signals</h1>
+                    <p>Rainfall fills breeding pools. Mobility spreads vectors. Symptom searches reveal early cases. Omega fuses all three.</p>
+                    <p class="note"><code>rainfall.tif + mobility.json + tweets.parquet → tensor</code></p>
+                    <p class="note">(Each data source compensates for others' blind spots)</p>
+                </div>
+                <div class="narrative-block" id="omega-3">
+                    <h3>Causal Discovery</h3>
+                    <h1>Causality, Not Correlation</h1>
+                    <p>NOTEARS + PCMCI maps influence arrows. "If humidity spikes two days after rain, expect dengue jump next Tuesday."</p>
+                    <p class="note">(District preloads platelets: $18K cost vs. $0.3M emergency airlift)</p>
+                </div>
+                <div class="narrative-block" id="omega-4">
+                    <h3>Neural‑SEIR</h3>
+                    <h1>Physics with a Steering Wheel</h1>
+                    <p>Differential equations keep math honest. Neural net tweaks transmission based on real movement patterns.</p>
+                    <p class="note">(Saves five years of PhD parameter tuning. 20% lower forecast error)</p>
+                </div>
+                <div class="narrative-block" id="omega-5">
+                    <h3>Temporal Attention</h3>
+                    <h1>Memory Across Monsoon Cycles</h1>
+                    <p>Transformer attends to the same week last year, last outbreak peak and recent anomalies. Long‑range dependencies are captured.</p>
+                    <p class="note">(Seasonal patterns + breaking news = robust forecast)</p>
+                </div>
+                <div class="narrative-block" id="omega-6">
+                    <h3>District Dashboard</h3>
+                    <h1>From Model to Medicine Cabinet</h1>
+                    <p>Health officers see 14‑day forecasts by upazila. Automated alerts trigger when predicted cases exceed capacity thresholds.</p>
+                    <p class="note">(Works offline; syncs when connectivity returns)</p>
+                </div>
+                <div class="narrative-block" id="omega-7">
+                    <h3>Impact</h3>
+                    <h1>92% F1 Score. 14 Days Ahead.</h1>
+                    <p>Pilot districts reduced severe dengue admissions by 34%. Supply costs down. Lives saved.</p>
+                    <p class="note">(Model retrains weekly on fresh case data)</p>
+                </div>
+            </div>
+        </section>
+        <!-- NightPulse narrative: eight panels -->
+        <section id="module-nightpulse" class="story-section">
+            <div class="story-content">
+                <div class="narrative-block" id="nightpulse-0">
+                    <h3>NightPulse · Economic Intelligence</h3>
+                    <h1>Cities Glow. GDP Leaks Through Street Lamps.</h1>
+                    <p>Read light like ledgers. VIIRS radiance + electricity data reveals the economic pulse invisible to surveys.</p>
+                    <p class="note">(Causal isolator filters festivals from true growth)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-1">
+                    <h3>The Gap</h3>
+                    <h1>Quarterly GDP Lags 90 Days</h1>
+                    <p>By the time official statistics arrive, the economy has already turned. Policy responds to yesterday's news.</p>
+                    <p class="note">(Informal sector ≈40% of Bangladesh GDP—unmeasured)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-2">
+                    <h3>Night Light Proxy</h3>
+                    <h1>Every Photon Is a Transaction</h1>
+                    <p>VIIRS satellite captures radiance at 500 m resolution. More light = more activity. But festivals confuse the signal.</p>
+                    <p class="note"><code>radiance[t] = economic[t] + seasonal[t] + noise[t]</code></p>
+                    <p class="note">(Must separate Eid glow from GDP glow)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-3">
+                    <h3>Shadow Economy</h3>
+                    <h1>Informal Economy Is Shadow GDP</h1>
+                    <p>3‑D CNN spots flickering stalls—each pixel is a missed micro‑enterprise. Markets that close before census workers arrive.</p>
+                    <p class="note">(Adds ≈11% to Dhaka's official numbers. $3B invisible economy)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-4">
+                    <h3>Causal Isolation</h3>
+                    <h1>Doubly‑Robust Estimator</h1>
+                    <p>Propensity weighting + outcome regression. Two safeguards in one equation. GDP signal survives holidays and storms.</p>
+                    <p class="note">(Ramadan dimming ≠ recession)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-5">
+                    <h3>Grid Correlation</h3>
+                    <h1>Electricity Bills Validate Light</h1>
+                    <p>Cross‑reference satellite radiance with utility consumption. Industrial vs. residential patterns emerge.</p>
+                    <p class="note">(Ground truth without ground surveys)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-6">
+                    <h3>Nowcasting</h3>
+                    <h1>15‑Day Economic Snapshots</h1>
+                    <p>Credit officers adjust loans before next quarter is measured. Investors see turning points in real time.</p>
+                    <p class="note">(Monthly GDP estimate: 2.3% error vs. official revision)</p>
+                </div>
+                <div class="narrative-block" id="nightpulse-7">
+                    <h3>Impact</h3>
+                    <h1>$3B Visible. Policy Informed.</h1>
+                    <p>Central bank uses NightPulse for monetary policy timing. Development agencies target investments where growth is real.</p>
+                    <p class="note">(Updated nightly. API access for institutions)</p>
+                </div>
+            </div>
+        </section>
+        <!-- ShoreWatch narrative: eight panels -->
+        <section id="module-shorewatch" class="story-section">
+            <div class="story-content">
+                <div class="narrative-block" id="shorewatch-0">
+                    <h3>ShoreWatch · Coastal Intelligence</h3>
+                    <h1>Coast Redraws with Every Storm</h1>
+                    <p>Lines in sand decide where houses fall. Hawkeye sketches new boundaries months ahead.</p>
+                    <p class="note">(Sub‑pixel resolution lifts Sentinel‑2 from 10 m to effective 5 m)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-1">
+                    <h3>The Stakes</h3>
+                    <h1>1 Million Climate Migrants per Year</h1>
+                    <p>Bangladesh loses land to the sea. Families relocate before maps update. Insurance lags reality by years.</p>
+                    <p class="note">(700 km coastline. 30+ million coastal residents)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-2">
+                    <h3>Satellite Archive</h3>
+                    <h1>30 Years of Shoreline Memory</h1>
+                    <p>Landsat + Sentinel archive reveals erosion rates, accretion zones and cyclone impacts. Historical patterns predict future shifts.</p>
+                    <p class="note"><code>1990…2024 → trend.fit() → 2029 projection</code></p>
+                    <p class="note">(Each pixel has a 34‑year history)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-3">
+                    <h3>Sub‑Pixel Vision</h3>
+                    <h1>See Beaches Smaller Than Pixels</h1>
+                    <p>Sub‑pixel U‑Net enhancement—like putting on glasses. Enough resolution to decide if the house on stilts survives one more monsoon.</p>
+                    <p class="note">(RMSE &lt;5 m. Half a bus length of precision)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-4">
+                    <h3>Physics on GPU</h3>
+                    <h1>CERC Sediment Transport as torch.nn.Module</h1>
+                    <p>Model respects tide tables but adapts to local sand grain. Coefficients learn themselves from decades of shoreline history.</p>
+                    <p class="note">(Wave energy + sediment supply + sea level = prediction)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-5">
+                    <h3>Cyclone Scenarios</h3>
+                    <h1>Storm Surge Before Landfall</h1>
+                    <p>Integrate NOAA track forecasts with local bathymetry. Simulate surge propagation. Identify at‑risk segments 48 hours ahead.</p>
+                    <p class="note">(Evacuation zones refined per storm, not per decade)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-6">
+                    <h3>Insurance Integration</h3>
+                    <h1>Risk Priced by the Metre</h1>
+                    <p>Parametric insurance triggers based on measured erosion. Payouts are automated when shoreline crosses a threshold.</p>
+                    <p class="note">(No claims adjusters. Satellite is the witness)</p>
+                </div>
+                <div class="narrative-block" id="shorewatch-7">
+                    <h3>Impact</h3>
+                    <h1>5‑Year Coastline Within 15 Metres</h1>
+                    <p>Land use planners know where to build. Insurers know what to cover. Families know when to move.</p>
+                    <p class="note">(Updated quarterly. Municipality dashboards available)</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scene and animation setup -->
+    <script>
+    // Activate GSAP ScrollTrigger plugin
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Set up Three.js scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(3, 1, 15);
+    camera.lookAt(0, 0, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.getElementById('scene-container').appendChild(renderer.domElement);
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x444444);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    dirLight.position.set(5, 3, 5);
+    scene.add(dirLight);
+
+    // Texture loader
+    const textureLoader = new THREE.TextureLoader();
+    // Load your 2K Earth textures. Place them in the 'assets' folder: earth_day.jpeg, earth_normal.jpeg, earth_lights.jpeg.
+    const earthMap      = textureLoader.load('assets/earth_day.jpeg');
+    const earthNormal   = textureLoader.load('assets/earth_normal.jpeg');
+    const earthLights   = textureLoader.load('assets/earth_lights.jpeg');
+
+    // Create Earth mesh
+    const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
+    const earthMaterial = new THREE.MeshStandardMaterial({
+        map: earthMap,
+        normalMap: earthNormal,
+        emissiveMap: earthLights,
+        emissiveIntensity: 0.7,
+        roughness: 1.0,
+        metalness: 0.0
+    });
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earth);
+
+    // Atmosphere: a subtle glow around the Earth
+    const atmosphereGeo = new THREE.SphereGeometry(5.05, 64, 64);
+    const atmosphereMat = new THREE.MeshLambertMaterial({ color: 0x2266ff, transparent: true, opacity: 0.3 });
+    const atmosphere    = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+    scene.add(atmosphere);
+
+    // Star field background
+    const starsGeometry = new THREE.BufferGeometry();
+    const numStars = 4000;
+    const positions = new Float32Array(numStars * 3);
+    for (let i = 0; i < numStars; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi   = Math.acos(2 * Math.random() - 1);
+        const dist  = 200 + Math.random() * 300;
+        positions[i * 3]     = dist * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = dist * Math.cos(phi);
+        positions[i * 3 + 2] = dist * Math.sin(phi) * Math.sin(theta);
+    }
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.6 });
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(stars);
+
+    // Satellite holder; will load GLB into this group
+    const satellite = new THREE.Group();
+    satellite.position.set(3, 1, 10);
+    scene.add(satellite);
+    // Load sentinel GLB model
+    const gltfLoader = new THREE.GLTFLoader();
+    gltfLoader.load('assets/sentinel.glb', (gltf) => {
+        const model = gltf.scene;
+        model.scale.set(0.003, 0.003, 0.003);
+        model.rotation.y = Math.PI; // orient forward
+        satellite.add(model);
+    }, undefined, (error) => { console.error('Failed to load sentinel.glb', error); });
+
+    // Convert lat/lon to 3D vector (returns THREE.Vector3)
+    function latLonToVector3(lat, lon, dist) {
+        const phi   = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        const x = -dist * Math.sin(phi) * Math.cos(theta);
+        const y =  dist * Math.cos(phi);
+        const z =  dist * Math.sin(phi) * Math.sin(theta);
+        return new THREE.Vector3(x, y, z);
+    }
+
+    // Waypoints from the original HAWKeye Engine v3 configuration
+    const floodWaypoints = [
+        { lat: 10,    lon: 45,   dist: 20 },
+        { lat: 15,    lon: 60,   dist: 14 },
+        { lat: 20,    lon: 75,   dist: 11 },
+        { lat: 23.68, lon: 90.35, dist: 8 },
+        { lat: 23.68, lon: 90.35, dist: 6 },
+        { lat: 24,    lon: 89,    dist: 6.5 },
+        { lat: 22,    lon: 91,    dist: 7 },
+        { lat: 23.68, lon: 90.35, dist: 12 }
+    ];
+    const omegaWaypoints = [
+        { lat: 23.68, lon: 90.35, dist: 14 },
+        { lat: 23.68, lon: 90.35, dist: 11 },
+        { lat: 24.4,  lon: 90.9,  dist: 9 },
+        { lat: 23.8,  lon: 90.4,  dist: 7 },
+        { lat: 23.68, lon: 90.35, dist: 6.5 },
+        { lat: 22.5,  lon: 90.5,  dist: 7.5 },
+        { lat: 24,    lon: 91,   dist: 8 },
+        { lat: 23.68, lon: 90.35, dist: 12 }
+    ];
+    const nightWaypoints = [
+        { lat: 23.8, lon: 90.4,  dist: 14 },
+        { lat: 23.8, lon: 90.4,  dist: 11 },
+        { lat: 23.8, lon: 90.4,  dist: 8 },
+        { lat: 23.7, lon: 90.35, dist: 6.5 },
+        { lat: 23.8, lon: 90.4,  dist: 7 },
+        { lat: 24,   lon: 90.5,  dist: 7.5 },
+        { lat: 23.68,lon: 90.35, dist: 8.5 },
+        { lat: 23.68,lon: 90.35, dist: 13 }
+    ];
+    const shoreWaypoints = [
+        { lat: 21.5, lon: 91.8, dist: 15 },
+        { lat: 21.5, lon: 91.8, dist: 12 },
+        { lat: 22,   lon: 91.5, dist: 9 },
+        { lat: 21.4, lon: 92,   dist: 7 },
+        { lat: 21.5, lon: 91.8, dist: 6 },
+        { lat: 22.3, lon: 91.8, dist: 7 },
+        { lat: 21.8, lon: 91.9, dist: 7.5 },
+        { lat: 21.5, lon: 91.8, dist: 14 }
+    ];
+    // Combine into a single path. We scale the distance down to suit our 5‑unit Earth radius.
+    const allWaypoints = [...floodWaypoints, ...omegaWaypoints, ...nightWaypoints, ...shoreWaypoints];
+    const cameraPath   = allWaypoints.map((wp) => latLonToVector3(wp.lat, wp.lon, wp.dist * 0.6));
+
+    // Continuous rotation and rendering
+    const clock = new THREE.Clock();
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        earth.rotation.y += delta * 0.015;
+        satellite.rotation.y += delta * 0.4;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    // Scroll‑driven camera animation
+    const mainTimeline = gsap.timeline({
+        scrollTrigger: {
+            trigger: '#scroll-container',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 2,
+            pin: true
+        }
+    });
+    // For each waypoint, move the camera to the next position
+    cameraPath.forEach((targetPos, index) => {
+        mainTimeline.to(camera.position, {
+            x: targetPos.x,
+            y: targetPos.y,
+            z: targetPos.z,
+            duration: 1,
+            ease: 'power1.inOut',
+            onUpdate: () => { camera.lookAt(earth.position); }
+        }, index);
+    });
+
+    /*
+     * Developer notes:
+     * - Place the following files in your repository to support realism:
+     *   • assets/sentinel.glb — your compressed Sentinel‑1A model from Sketchfab.
+     *   • assets/earth_day.jpeg — your 2K (or higher) Earth colour texture (e.g. Blue Marble composite【444734798167600†L10-L16】【444734798167600†L109-L116】).
+     *   • assets/earth_normal.jpeg — the normal map you uploaded (converted to JPG/PNG).
+     *   • assets/earth_lights.jpeg — the night‑lights map for Earth.
+     * - This HTML brings together all modules from your original dashboard with a single, cinematic flight path. The camera glides through a series of latitude/longitude waypoints derived from the original HAWKeye configuration. Feel free to adjust the scaling factor (0.6) or modify individual waypoints for a custom narrative.
+     * - To simulate more complex motion (e.g. panning or tilting), you can add separate `.to()` calls on `camera.rotation` or animate `earth.rotation`. Keep in mind that rotation values are in radians.
+     */
+    </script>
+</body>
+</html>
