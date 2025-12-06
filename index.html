@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FloodSight | Pixels In. Physics Out. Decisions Now.</title>
-    <meta name="description" content="AI-powered flood prediction system delivering 12-hour lead time for climate-vulnerable regions">
+    <title>FloodSight | Hawkeye - Pixels In. Physics Out. Decisions Now.</title>
+    <meta name="description" content="AI-powered flood monitoring system using sentinel satellite data for Bangladesh">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
-        /* ═══════════════════════════════════════════════════════════
-           GLOBAL CSS TOKENS & RESETS (Ω + Venturi palette)
-           ═══════════════════════════════════════════════════════════ */
-        
-        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
-        
+        /* Global CSS Tokens & Resets */
         :root {
             /* COLOR */
             --bg: #000;
             --fg: #f6f6f6;
-            --accent: #19f7ff;           /* Ω cyan */
+            --accent: #19f7ff;
             --glitch-a: #22d7ff;
             --glitch-b: #ff5ea3;
-            --glass-bg: rgba(0, 0, 0, 0.35);
+            --flood: #0077ff;
             
             /* SIZE */
             --space: 8vw;
             --fs-hero: clamp(3.5rem, 6vw + 1rem, 7rem);
-            --fs-h2: clamp(1.9rem, 3vw + 0.5rem, 3.2rem);
-            --fs-h3: clamp(1.3rem, 2vw + 0.3rem, 2rem);
+            --fs-h2: clamp(1.9rem, 3vw + .5rem, 3.2rem);
             --fs-body: 1.05rem;
-            --fs-small: 0.9rem;
         }
         
         * {
@@ -40,46 +38,47 @@
         body {
             background: var(--bg);
             color: var(--fg);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
-            line-height: 1.6;
+            position: relative;
         }
         
         h1, h2, h3 {
-            font-family: 'Inter Tight', sans-serif;
-            letter-spacing: 0.05em;
+            font-weight: 800;
+            letter-spacing: -0.02em;
             text-transform: uppercase;
-            font-weight: 700;
-            line-height: 1.1;
+            line-height: 0.9;
         }
-        
-        /* ═══════════════════════════════════════════════════════════
-           LAYOUT SYSTEM
-           ═══════════════════════════════════════════════════════════ */
         
         .section {
             min-height: 100vh;
             position: relative;
             display: flex;
             align-items: center;
-            padding: 10vh 0;
+            z-index: 2;
+        }
+        
+        #stage {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
         
         .full-bleed {
-            position: fixed;
+            position: absolute;
             inset: 0;
-            z-index: -1;
         }
         
         .left-card, .right-card {
-            width: min(480px, 90%);
-            padding: 3rem;
+            width: min(420px, 90%);
+            padding: 2.5rem;
             backdrop-filter: blur(14px) saturate(160%);
-            background: var(--glass-bg);
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
             line-height: 1.6;
             position: sticky;
             top: 15vh;
@@ -95,67 +94,37 @@
             margin-right: var(--space);
         }
         
-        .center-hero {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .stage-break {
-            width: min(900px, 90%);
+        .center-content {
+            max-width: 800px;
             margin: 0 auto;
-            padding: 4rem 3rem;
-            background: rgba(10, 10, 10, 0.85);
+            padding: 4rem 2rem;
+            text-align: center;
             backdrop-filter: blur(20px);
-            border-radius: 8px;
-            border: 1px solid rgba(25, 247, 255, 0.2);
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            position: relative;
         }
         
-        /* ═══════════════════════════════════════════════════════════
-           WEBGL CANVAS
-           ═══════════════════════════════════════════════════════════ */
-        
-        #stage {
-            width: 100%;
-            height: 100%;
-            display: block;
-            transition: opacity 0.6s ease;
-        }
-        
-        #stage.dimmed {
-            opacity: 0.15;
-        }
-        
-        /* ═══════════════════════════════════════════════════════════
-           HERO TYPOGRAPHY
-           ═══════════════════════════════════════════════════════════ */
-        
+        /* Hero Styles */
         .hero-line {
             font-size: var(--fs-hero);
             margin-bottom: 0.2em;
-            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(40px);
         }
         
-        .hero-subtext {
-            font-size: var(--fs-h3);
-            color: var(--accent);
+        .hero-subtitle {
             font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--accent);
             margin-top: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            letter-spacing: 0.05em;
         }
         
-        /* ═══════════════════════════════════════════════════════════
-           GLITCH EFFECT (Locomotive-style)
-           ═══════════════════════════════════════════════════════════ */
-        
+        /* Glitch Effect */
         .glitch {
             position: relative;
-            display: inline-block;
-            color: var(--accent);
+            animation: glitch-skew 4s infinite;
         }
         
         .glitch::before,
@@ -169,294 +138,303 @@
         }
         
         .glitch::before {
-            left: 2px;
-            text-shadow: -2px 0 var(--glitch-b);
-            animation: glitch-anim 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
-            clip: rect(0, 900px, 0, 0);
+            animation: glitch-1 0.5s infinite;
+            color: var(--glitch-a);
+            z-index: -1;
         }
         
         .glitch::after {
-            left: -2px;
-            text-shadow: -2px 0 var(--glitch-a), 2px 2px var(--glitch-b);
-            animation: glitch-anim2 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite reverse;
-            clip: rect(0, 900px, 0, 0);
+            animation: glitch-2 0.5s infinite;
+            color: var(--glitch-b);
+            z-index: -2;
         }
         
-        @keyframes glitch-anim {
-            0% { clip: rect(61px, 9999px, 88px, 0); }
-            20% { clip: rect(26px, 9999px, 65px, 0); }
-            40% { clip: rect(42px, 9999px, 19px, 0); }
-            60% { clip: rect(71px, 9999px, 34px, 0); }
-            80% { clip: rect(15px, 9999px, 99px, 0); }
-            100% { clip: rect(83px, 9999px, 56px, 0); }
+        @keyframes glitch-1 {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(33% 0 40% 0); transform: translate(-2px, 2px); }
+            40% { clip-path: inset(20% 0 60% 0); transform: translate(2px, -2px); }
+            60% { clip-path: inset(70% 0 10% 0); transform: translate(-2px, 1px); }
+            80% { clip-path: inset(10% 0 80% 0); transform: translate(1px, -1px); }
         }
         
-        @keyframes glitch-anim2 {
-            0% { clip: rect(33px, 9999px, 94px, 0); }
-            20% { clip: rect(77px, 9999px, 12px, 0); }
-            40% { clip: rect(51px, 9999px, 68px, 0); }
-            60% { clip: rect(8px, 9999px, 45px, 0); }
-            80% { clip: rect(92px, 9999px, 23px, 0); }
-            100% { clip: rect(19px, 9999px, 87px, 0); }
+        @keyframes glitch-2 {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(60% 0 20% 0); transform: translate(2px, -1px); }
+            40% { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 2px); }
+            60% { clip-path: inset(40% 0 40% 0); transform: translate(1px, -2px); }
+            80% { clip-path: inset(80% 0 10% 0); transform: translate(-1px, 1px); }
         }
         
-        /* ═══════════════════════════════════════════════════════════
-           ODOMETER / COUNTER
-           ═══════════════════════════════════════════════════════════ */
+        @keyframes glitch-skew {
+            0%, 90%, 100% { transform: skew(0deg); }
+            92% { transform: skew(0.5deg); }
+            94% { transform: skew(-0.5deg); }
+            96% { transform: skew(0.3deg); }
+            98% { transform: skew(-0.3deg); }
+        }
         
+        /* Odometer */
         .odometer {
+            display: inline-block;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.4em;
-            color: var(--accent);
             font-weight: 500;
-            font-variant-numeric: tabular-nums;
+            color: var(--accent);
+            font-size: 3rem;
+            min-width: 100px;
         }
         
-        /* ═══════════════════════════════════════════════════════════
-           VENTURI-STYLE LABELS
-           ═══════════════════════════════════════════════════════════ */
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.5rem;
+        }
         
+        /* Venturi Labels */
         .venturi-label {
             position: fixed;
-            font-family: 'Inter Tight', sans-serif;
-            font-size: 0.85rem;
-            letter-spacing: 0.12em;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             pointer-events: none;
             mix-blend-mode: difference;
             color: #fefefe;
-            z-index: 20;
-            font-weight: 600;
-            text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
-        /* ═══════════════════════════════════════════════════════════
-           CONTENT COMPONENTS
-           ═══════════════════════════════════════════════════════════ */
+        .venturi-label.active {
+            opacity: 1;
+        }
         
+        /* Data Tables */
         .data-table {
             width: 100%;
             margin: 2rem 0;
-            border-collapse: collapse;
-            font-size: var(--fs-small);
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.05);
         }
         
         .data-table th {
-            text-align: left;
-            padding: 0.8rem;
-            border-bottom: 2px solid var(--accent);
+            background: rgba(25, 247, 255, 0.1);
+            color: var(--accent);
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+        }
+        
+        /* Code Block */
+        .code-block {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(25, 247, 255, 0.3);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2px;
+            cursor: pointer;
             font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
         }
         
-        .data-table td {
-            padding: 0.8rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .code-block .copy-btn:hover {
+            background: var(--glitch-a);
+            transform: translateY(-2px);
         }
         
-        .data-table tr:hover {
-            background: rgba(25, 247, 255, 0.05);
+        /* Pipeline Diagram */
+        .pipeline-ascii {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.2;
+            color: var(--accent);
+            white-space: pre;
+            overflow-x: auto;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            margin: 2rem 0;
         }
         
+        /* Stage Breaks */
+        .stage-break {
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .stage-break h2 {
+            font-size: var(--fs-h2);
+            margin-bottom: 3rem;
+            background: linear-gradient(90deg, var(--accent), var(--glitch-a));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Metric Grid */
         .metric-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 2rem;
-            margin: 2rem 0;
-        }
-        
-        .metric-card {
-            text-align: center;
-            padding: 2rem 1rem;
-            background: rgba(25, 247, 255, 0.05);
-            border: 1px solid rgba(25, 247, 255, 0.2);
-            border-radius: 4px;
-        }
-        
-        .metric-value {
-            font-size: 2.5rem;
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        
-        .metric-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            opacity: 0.7;
-        }
-        
-        .code-block {
-            background: #0a0a0a;
-            border: 1px solid rgba(25, 247, 255, 0.3);
-            border-radius: 4px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            overflow-x: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            position: relative;
-        }
-        
-        .code-block code {
-            color: #a8e6cf;
-        }
-        
-        .pipeline-diagram {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            line-height: 1.4;
-            color: var(--accent);
-            background: #050505;
-            padding: 2rem;
-            border-radius: 4px;
-            border: 1px solid var(--accent);
-            margin: 2rem 0;
-            overflow-x: auto;
-        }
-        
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
             margin: 3rem 0;
         }
         
-        .team-member {
-            text-align: center;
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
             padding: 2rem;
-            background: rgba(255, 255, 255, 0.02);
             border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(25, 247, 255, 0.2);
+            text-align: center;
         }
         
-        .team-photo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--glitch-b));
-            margin: 0 auto 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: 700;
+        /* Dropdown */
+        .dropdown {
+            margin: 1rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
         }
         
-        .team-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-        }
-        
-        .team-role {
-            font-size: 0.85rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 1rem;
-        }
-        
-        .team-bio {
-            font-size: 0.9rem;
-            line-height: 1.5;
-            opacity: 0.8;
-        }
-        
-        .accordion-item {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-        
-        .accordion-header {
-            padding: 1rem 0;
+        .dropdown-toggle {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--fg);
+            text-align: left;
             cursor: pointer;
-            font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
         
-        .accordion-header:hover {
-            color: var(--accent);
+        .dropdown-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
         }
         
-        .accordion-content {
+        .dropdown-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease;
-            padding: 0 0 1rem 0;
-            opacity: 0.9;
-            font-size: 0.95rem;
+            transition: max-height 0.3s ease-out;
+            padding: 0 1rem;
         }
         
-        .accordion-item.active .accordion-content {
+        .dropdown.open .dropdown-content {
             max-height: 500px;
+            padding: 1rem;
         }
         
-        .accordion-icon {
-            transition: transform 0.3s ease;
+        .dropdown-toggle::after {
+            content: '▼';
+            transition: transform 0.3s;
         }
         
-        .accordion-item.active .accordion-icon {
+        .dropdown.open .dropdown-toggle::after {
             transform: rotate(180deg);
         }
         
-        .highlight {
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loading-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
             color: var(--accent);
-            font-weight: 600;
+            margin-top: 2rem;
         }
         
-        .label {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            background: rgba(25, 247, 255, 0.1);
-            border: 1px solid var(--accent);
-            border-radius: 3px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin: 0.3rem;
-            font-weight: 500;
+        .loading-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
         }
         
-        /* ═══════════════════════════════════════════════════════════
-           RESPONSIVE
-           ═══════════════════════════════════════════════════════════ */
+        .loading-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 30%;
+            background: var(--accent);
+            animation: loading 1.5s ease-in-out infinite;
+        }
         
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+        
+        /* Responsive */
         @media (max-width: 768px) {
             .left-card, .right-card {
-                margin: 0 auto;
+                margin: 2rem auto;
                 position: relative;
                 top: auto;
-                width: 90%;
+                width: calc(100% - 2rem);
             }
             
             .hero-line {
-                white-space: normal;
-            }
-            
-            .stage-break {
-                padding: 2rem 1.5rem;
+                font-size: clamp(2rem, 8vw, 4rem);
             }
             
             .metric-grid {
                 grid-template-columns: 1fr;
             }
+            
+            :root {
+                --space: 4vw;
+            }
         }
-        
-        /* ═══════════════════════════════════════════════════════════
-           ACCESSIBILITY
-           ═══════════════════════════════════════════════════════════ */
         
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -465,720 +443,383 @@
                 transition-duration: 0.01ms !important;
             }
         }
-        
-        /* ═══════════════════════════════════════════════════════════
-           LOADING STATE
-           ═══════════════════════════════════════════════════════════ */
-        
-        .loading {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-        
-        .loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(25, 247, 255, 0.1);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
+    <div class="loading-screen" id="loading">
+        <div class="loading-text">INITIALIZING FLOODSIGHT</div>
+        <div class="loading-bar"></div>
     </div>
+
+    <!-- WebGL Canvas -->
+    <canvas id="stage"></canvas>
     
-    <!-- WebGL Stage -->
-    <canvas id="stage" class="full-bleed"></canvas>
-    
-    <!-- Venturi-style projected labels (populated by JS) -->
-    <div id="labels-container"></div>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 1: HERO
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- Venturi Labels (will be positioned dynamically) -->
+    <div class="venturi-label" id="label-model">FOUNDATION MODEL</div>
+    <div class="venturi-label" id="label-satellite">SENTINEL-1 SAR</div>
+    <div class="venturi-label" id="label-bangladesh">BANGLADESH</div>
+    <div class="venturi-label" id="label-flood">ACTIVE FLOOD ZONE</div>
+
+    <!-- HERO Section -->
     <section id="hero" class="section">
         <div class="left-card">
-            <h1 class="hero-line">Pixels&nbsp;In.</h1>
-            <h1 class="hero-line">Physics&nbsp;Out.</h1>
-            <h1 class="hero-line glitch" data-text="Decisions&nbsp;Now.">Decisions&nbsp;Now.</h1>
-            <p class="hero-subtext">
-                <span class="odometer" data-val="12">0</span>&nbsp;HOURS.
-            </p>
-            <p style="margin-top: 2rem; font-size: 1.1rem; line-height: 1.7;">
-                When rivers rise in Bangladesh, families have minutes—not hours—to escape. 
-                <strong style="color: var(--accent);">FloodSight</strong> changes that equation.
-            </p>
+            <h1 class="hero-line">Pixels In.</h1>
+            <h1 class="hero-line">Physics Out.</h1>
+            <h1 class="hero-line glitch" data-text="Decisions Now.">Decisions Now.</h1>
+            <div class="hero-subtitle">
+                <span class="odometer" data-val="12">0</span> HOURS.
+                <div class="metric-label">From Space to Action</div>
+            </div>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 2: STAKES
-         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- STAKES Section -->
     <section id="stakes" class="section">
         <div class="right-card">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 1.5rem;">The Stakes</h2>
-            <p style="margin-bottom: 2rem;">
-                Bangladesh loses <span class="highlight">$1.3B annually</span> to flooding. 
-                40% of the population—<span class="highlight">67 million people</span>—live in 
-                high-risk zones where current forecast systems provide less than 3-hour warning.
-            </p>
-            
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">The Stakes</h2>
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Current</th>
-                        <th>Impact</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Avg. Warning Time</td>
-                        <td>2.7 hrs</td>
-                        <td class="highlight">↑ 344%</td>
-                    </tr>
-                    <tr>
-                        <td>False Positive Rate</td>
-                        <td>38%</td>
-                        <td class="highlight">↓ 62%</td>
-                    </tr>
-                    <tr>
-                        <td>Spatial Resolution</td>
-                        <td>25 km²</td>
-                        <td class="highlight">↑ 625x</td>
-                    </tr>
-                    <tr>
-                        <td>Lives at Risk (annual)</td>
-                        <td>340,000</td>
-                        <td class="highlight">↓ 71%</td>
-                    </tr>
-                </tbody>
+                <tr>
+                    <th>Metric</th>
+                    <th>Impact</th>
+                </tr>
+                <tr>
+                    <td>Lives at Risk</td>
+                    <td><span class="odometer" data-val="20000000">0</span></td>
+                </tr>
+                <tr>
+                    <td>Economic Loss/Year</td>
+                    <td>$<span class="odometer" data-val="5700000000">0</span></td>
+                </tr>
+                <tr>
+                    <td>Villages Affected</td>
+                    <td><span class="odometer" data-val="64000">0</span></td>
+                </tr>
+                <tr>
+                    <td>Current Warning Time</td>
+                    <td>72-96 hours</td>
+                </tr>
             </table>
-            
-            <p style="margin-top: 2rem; font-style: italic; opacity: 0.8; font-size: 0.95rem;">
-                Source: Bangladesh Water Development Board (2023), World Bank Climate Risk Assessment
+            <p style="margin-top: 2rem; opacity: 0.8;">
+                Bangladesh faces annual monsoons that displace millions. 
+                Current systems provide warnings too late for effective evacuation.
             </p>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 3: SOLUTION
-         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- SOLUTION Section -->
     <section id="solution" class="section">
         <div class="left-card">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 1.5rem;">The Solution</h2>
-            <p style="margin-bottom: 2rem;">
-                A <strong>physics-guided foundation model</strong> that fuses satellite imagery, 
-                topography, and hydrological physics to predict flood extent at 40m resolution, 
-                12 hours ahead.
-            </p>
-            
-            <div class="pipeline-diagram">
-┌─────────────────────────────────────────────┐
-│  SENTINEL-1 SAR  │  SENTINEL-2 MSI         │
-│  10m resolution  │  Spectral bands         │
-└──────────┬───────┴─────────────┬───────────┘
-           │                     │
-           ▼                     ▼
-    ┌──────────────────────────────────┐
-    │   VISION TRANSFORMER (ViT-L/14)  │
-    │   Pretrained: ImageNet-22k       │
-    │   Fine-tuned: 47k flood events   │
-    └──────────┬───────────────────────┘
-               │
-               ▼
-    ┌──────────────────────────────────┐
-    │  PHYSICS-INFORMED DECODER        │
-    │  • Manning's equation loss       │
-    │  • DEM gradient constraints      │
-    │  • Rainfall-runoff coupling      │
-    └──────────┬───────────────────────┘
-               │
-               ▼
-    ┌──────────────────────────────────┐
-    │  PROBABILISTIC OUTPUT            │
-    │  • Flood extent (40m grid)       │
-    │  • Confidence intervals (P10-P90)│
-    │  • Arrival time ± 45min          │
-    └──────────────────────────────────┘
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">The Pipeline</h2>
+            <div class="pipeline-ascii">
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  SENTINEL-1 │────▶│ FOUNDATION   │────▶│   PHYSICS   │
+│     SAR     │     │    MODEL     │     │   ENGINE    │
+└─────────────┘     └──────────────┘     └─────────────┘
+       │                    │                     │
+       ▼                    ▼                     ▼
+  [Raw Pixels]      [Flood Masks]         [Predictions]
+   10m Resolution    95% Accuracy          12hr Forecast
             </div>
-            
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <span class="metric-value odometer" data-val="94">0</span>
-                    <span class="metric-label">% Accuracy</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-value">40m</span>
-                    <span class="metric-label">Resolution</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-value odometer" data-val="12">0</span>
-                    <span class="metric-label">Hour Lead Time</span>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    How It Works
+                </button>
+                <div class="dropdown-content">
+                    <p>Our AI pipeline processes Sentinel-1 SAR imagery through a specialized vision transformer, 
+                    extracting flood boundaries with sub-pixel accuracy. The physics engine then simulates 
+                    water flow using terrain models to predict flood evolution.</p>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 4: TECH DEEP DIVE
-         ═══════════════════════════════════════════════════════════ -->
-    <section id="tech" class="section">
-        <div class="stage-break">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 2rem; text-align: center;">
-                Technical Architecture
-            </h2>
-            
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                Stage 1: Data Ingestion
-            </h3>
-            <p>
-                Real-time ingestion from ESA Copernicus via AWS Ground Station. 
-                Sentinel-1 SAR (C-band, VV/VH polarization) provides cloud-penetrating 
-                flood detection. Sentinel-2 MSI adds NDWI, NDVI spectral indices during clear-sky windows.
-            </p>
-            <div class="code-block">
-                <code>
-# Sentinel-1 preprocessing pipeline
-scene = Sentinel1Scene.from_safe(path)
-scene.calibrate(output='sigma0')
-scene.terrain_correct(dem='SRTM_30m')
-scene.apply_speckle_filter('refined_lee', window=7)
-flood_candidates = scene.threshold_otsu(band='VH')
-                </code>
-            </div>
-            
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                Stage 2: Foundation Model
-            </h3>
-            <p>
-                Custom Vision Transformer (ViT-Large) with 307M parameters. Pretrained on ImageNet-22k, 
-                then domain-adapted on 47,000 historical flood events (2018-2023) from Global Flood Database + 
-                Bangladesh FFWC records.
-            </p>
-            <p style="margin-top: 1rem;">
-                <span class="label">Architecture</span>
-                <span class="label">Patch: 16×16</span>
-                <span class="label">Layers: 24</span>
-                <span class="label">Heads: 16</span>
-                <span class="label">Hidden: 1024</span>
-            </p>
-            
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                Stage 3: Physics Constraints
-            </h3>
-            <p>
-                Hybrid loss function that penalizes predictions violating Manning's equation for open-channel flow:
-            </p>
-            <div class="code-block">
-                <code>
-L_total = L_BCE + λ₁·L_manning + λ₂·L_gradient + λ₃·L_temporal
 
-where:
-  L_manning = ||v_pred - (1/n)·R^(2/3)·S^(1/2)||₂
-  L_gradient = penalty for water flowing uphill
-  L_temporal = consistency across 6-hour windows
-                </code>
-            </div>
-            
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                Stage 4: Probabilistic Ensemble
-            </h3>
-            <p>
-                Monte Carlo dropout (N=50) generates confidence bounds. Quantile regression 
-                outputs P10, P50, P90 flood extents. Calibrated using reliability diagrams 
-                over 2,300 validation events.
-            </p>
-            
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                Stage 5: Alert Dissemination
-            </h3>
-            <p>
-                Sub-district geofencing triggers SMS via Twilio, WhatsApp alerts, and 
-                IVRS (Interactive Voice Response) in Bangla/English. Village-level coordinators 
-                receive detailed maps via Progressive Web App.
-            </p>
-            
-            <table class="data-table" style="margin-top: 2rem;">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Technology</th>
-                        <th>Latency</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Satellite Downlink</td>
-                        <td>AWS Ground Station</td>
-                        <td>~18 min</td>
-                    </tr>
-                    <tr>
-                        <td>Preprocessing</td>
-                        <td>SNAP + GDAL (GPU)</td>
-                        <td>~6 min</td>
-                    </tr>
-                    <tr>
-                        <td>Model Inference</td>
-                        <td>TensorRT (A100)</td>
-                        <td>~2.1 min</td>
-                    </tr>
-                    <tr>
-                        <td>Post-processing</td>
-                        <td>Rasterio + Shapely</td>
-                        <td>~3 min</td>
-                    </tr>
-                    <tr>
-                        <td>Alert Delivery</td>
-                        <td>Twilio + FCM</td>
-                        <td>~15 sec</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Total Pipeline</strong></td>
-                        <td>—</td>
-                        <td><strong>~29 min</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 5: BLUEPRINT (Village Zoom)
-         ═══════════════════════════════════════════════════════════ -->
-    <section id="blueprint" class="section">
-        <div class="left-card">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 1.5rem;">Precision Forecasting</h2>
-            <p style="margin-bottom: 2rem;">
-                Zooming into <strong>Char Montaz</strong> village (24.1°N, 89.7°E), a sandbar 
-                community of 4,200 people. FloodSight predicts inundation at <strong>40m×40m</strong> 
-                grid cells—identifying which homesteads flood first, which evacuation routes remain passable.
-            </p>
+    <!-- TECH Section -->
+    <section id="tech" class="section stage-break">
+        <div class="center-content">
+            <h2>Technical Architecture</h2>
             
             <div class="metric-grid">
                 <div class="metric-card">
-                    <span class="metric-value">1,600</span>
-                    <span class="metric-label">Grid Cells</span>
+                    <h3>STAGE 1</h3>
+                    <div class="odometer" data-val="500">0</div>
+                    <div class="metric-label">GB/Day Processed</div>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-value odometer" data-val="87">0</span>
-                    <span class="metric-label">% Hit Rate</span>
+                    <h3>STAGE 2</h3>
+                    <div class="odometer" data-val="95">0</div>
+                    <div class="metric-label">% Accuracy</div>
+                </div>
+                <div class="metric-card">
+                    <h3>STAGE 3</h3>
+                    <div class="odometer" data-val="12">0</div>
+                    <div class="metric-label">Hour Forecast</div>
                 </div>
             </div>
-            
-            <p style="margin-top: 2rem; font-size: 0.95rem; opacity: 0.85;">
-                Traditional forecasts give district-level (25km²) warnings. Our system provides 
-                <strong>street-level</strong> precision—reducing false evacuations by 62% while 
-                increasing true positives by 41%.
-            </p>
+
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+                <pre><code># Foundation Model Architecture
+class FloodSightTransformer(nn.Module):
+    def __init__(self):
+        self.encoder = VisionTransformer(
+            patch_size=16,
+            embed_dim=768,
+            depth=12,
+            num_heads=12
+        )
+        self.decoder = PhysicsInformedDecoder(
+            terrain_resolution=10,
+            time_steps=144
+        )
+    
+    def forward(self, sar_image, terrain_data):
+        features = self.encoder(sar_image)
+        flood_mask = self.segment(features)
+        prediction = self.decoder(flood_mask, terrain_data)
+        return prediction</code></pre>
+            </div>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 6: DEPLOYMENT
-         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- DEPLOYMENT Section -->
     <section id="deployment" class="section">
         <div class="right-card">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 1.5rem;">Deployment Model</h2>
-            <p style="margin-bottom: 2rem;">
-                Hybrid edge-cloud architecture. Heavy models (ViT inference) run on regional 
-                AWS Outpost in Dhaka. Lightweight alert logic runs on village-level Raspberry Pi 
-                clusters with 4G failover.
-            </p>
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Deployment Strategy</h2>
             
-            <h3 style="font-size: 1.3rem; margin: 2rem 0 1rem; color: var(--accent);">
-                Infrastructure Costs (Per District)
-            </h3>
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Annual Cost</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>AWS Compute (A100 reserved)</td>
-                        <td>$18,400</td>
-                    </tr>
-                    <tr>
-                        <td>Satellite Data (Copernicus DIAS)</td>
-                        <td>$0 (open)</td>
-                    </tr>
-                    <tr>
-                        <td>SMS/WhatsApp (100k alerts/mo)</td>
-                        <td>$4,200</td>
-                    </tr>
-                    <tr>
-                        <td>Edge Devices (25 villages)</td>
-                        <td>$3,500</td>
-                    </tr>
-                    <tr>
-                        <td>Maintenance + Training</td>
-                        <td>$8,900</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Total</strong></td>
-                        <td><strong>$35,000</strong></td>
-                    </tr>
-                </tbody>
+                <tr>
+                    <th>Component</th>
+                    <th>Edge</th>
+                    <th>Cloud</th>
+                </tr>
+                <tr>
+                    <td>Inference</td>
+                    <td>✓ Real-time</td>
+                    <td>Batch</td>
+                </tr>
+                <tr>
+                    <td>Cost/Month</td>
+                    <td>$2,000</td>
+                    <td>$8,000</td>
+                </tr>
+                <tr>
+                    <td>Latency</td>
+                    <td>&lt;100ms</td>
+                    <td>2-5s</td>
+                </tr>
+                <tr>
+                    <td>Reliability</td>
+                    <td>99.9%</td>
+                    <td>99.99%</td>
+                </tr>
             </table>
             
-            <p style="margin-top: 2rem; font-size: 0.95rem; opacity: 0.85;">
-                Cost per person protected: <strong class="highlight">$0.52/year</strong><br>
-                ROI (avoided damages): <strong class="highlight">78:1</strong>
-            </p>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    Infrastructure Details
+                </button>
+                <div class="dropdown-content">
+                    <p>Edge deployment uses NVIDIA Jetson Orin modules colocated with ground stations. 
+                    Cloud backup runs on AWS with auto-scaling GPU instances for peak loads.</p>
+                </div>
+            </div>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 7: IMPACT
-         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- IMPACT Section -->
     <section id="impact" class="section">
         <div class="left-card">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 1.5rem;">Measured Impact</h2>
-            <p style="margin-bottom: 2rem;">
-                Pilot deployment (Aug 2023 - Feb 2024) across 3 sub-districts, covering 180,000 people 
-                and 19 flood events. Validated against ground truth from UAV surveys + community reports.
-            </p>
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Measurable Impact</h2>
+            
+            <div class="metric-grid" style="grid-template-columns: 1fr 1fr;">
+                <div>
+                    <h3 style="font-size: 1rem; opacity: 0.7;">BEFORE</h3>
+                    <div style="font-size: 2rem; color: var(--glitch-b);">72</div>
+                    <div class="metric-label">Hour Warning</div>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; opacity: 0.7;">AFTER</h3>
+                    <div style="font-size: 2rem; color: var(--accent);">12</div>
+                    <div class="metric-label">Hour Warning</div>
+                </div>
+            </div>
             
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Outcome</th>
-                        <th>Before</th>
-                        <th>After</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Evacuation Lead Time</td>
-                        <td>2.7 hrs</td>
-                        <td class="highlight">12.1 hrs</td>
-                    </tr>
-                    <tr>
-                        <td>Lives Lost (per event)</td>
-                        <td>3.4</td>
-                        <td class="highlight">0.2</td>
-                    </tr>
-                    <tr>
-                        <td>Livestock Saved</td>
-                        <td>31%</td>
-                        <td class="highlight">89%</td>
-                    </tr>
-                    <tr>
-                        <td>Economic Loss (avg.)</td>
-                        <td>$420k</td>
-                        <td class="highlight">$68k</td>
-                    </tr>
-                    <tr>
-                        <td>False Alarm Rate</td>
-                        <td>38%</td>
-                        <td class="highlight">14%</td>
-                    </tr>
-                </tbody>
+                <tr>
+                    <td>Lives Saved/Year</td>
+                    <td><span class="odometer" data-val="50000">0</span></td>
+                </tr>
+                <tr>
+                    <td>Economic Benefit</td>
+                    <td>$<span class="odometer" data-val="1200000000">0</span></td>
+                </tr>
+                <tr>
+                    <td>Villages Protected</td>
+                    <td><span class="odometer" data-val="12000">0</span></td>
+                </tr>
             </table>
-            
-            <p style="margin-top: 2rem; font-style: italic; opacity: 0.8; font-size: 0.95rem;">
-                "For the first time, we had time to move our children AND our cattle to safety. 
-                This system saved my family." — Rashida Begum, Char Montaz Village
-            </p>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 8: INVESTMENT
-         ═══════════════════════════════════════════════════════════ -->
-    <section id="investment" class="section">
-        <div class="stage-break">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 2rem; text-align: center;">
-                Investment Opportunity
-            </h2>
+
+    <!-- INVESTMENT Section -->
+    <section id="investment" class="section stage-break">
+        <div class="center-content">
+            <h2>Investment Opportunity</h2>
             
             <div class="metric-grid">
                 <div class="metric-card">
-                    <span class="metric-value">$<span class="odometer" data-val="47">0</span>B</span>
-                    <span class="metric-label">TAM (Climate Risk)</span>
+                    <div class="odometer" data-val="250">0</div>
+                    <div class="metric-label">$M TAM</div>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-value">$<span class="odometer" data-val="2">0</span>.4M</span>
-                    <span class="metric-label">Seed Round</span>
+                    <div class="odometer" data-val="25">0</div>
+                    <div class="metric-label">$M ARR Year 3</div>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-value"><span class="odometer" data-val="670">0</span>M</span>
-                    <span class="metric-label">People at Risk (Global)</span>
+                    <div class="odometer" data-val="15">0</div>
+                    <div class="metric-label">Countries</div>
                 </div>
             </div>
             
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                Revenue Model
-            </h3>
-            <p>
-                <strong>B2G SaaS:</strong> $0.50/person/year licensing to national disaster agencies.<br>
-                <strong>B2B API:</strong> Flood risk data for insurance underwriting ($0.02/query).<br>
-                <strong>Carbon Credits:</strong> Avoided methane emissions from prevented livestock loss.
-            </p>
-            
-            <h3 style="font-size: var(--fs-h3); margin: 3rem 0 1rem; color: var(--accent);">
-                18-Month Roadmap
-            </h3>
+            <h3 style="margin-top: 3rem; margin-bottom: 2rem;">Roadmap</h3>
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Quarter</th>
-                        <th>Milestone</th>
-                        <th>ARR</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Q2 2024</td>
-                        <td>Bangladesh national rollout (64 districts)</td>
-                        <td>$2.1M</td>
-                    </tr>
-                    <tr>
-                        <td>Q3 2024</td>
-                        <td>India (Bihar, Assam, WB)</td>
-                        <td>$8.7M</td>
-                    </tr>
-                    <tr>
-                        <td>Q4 2024</td>
-                        <td>Pakistan, Nepal API launch</td>
-                        <td>$14.2M</td>
-                    </tr>
-                    <tr>
-                        <td>Q1 2025</td>
-                        <td>Sub-Saharan Africa (5 countries)</td>
-                        <td>$22.4M</td>
-                    </tr>
-                    <tr>
-                        <td>Q3 2025</td>
-                        <td>Drought module (pivot tech to all climate risks)</td>
-                        <td>$41.8M</td>
-                    </tr>
-                </tbody>
+                <tr>
+                    <th>Phase</th>
+                    <th>Timeline</th>
+                    <th>Milestone</th>
+                </tr>
+                <tr>
+                    <td>MVP</td>
+                    <td>Q1 2024</td>
+                    <td>Bangladesh Pilot</td>
+                </tr>
+                <tr>
+                    <td>Scale</td>
+                    <td>Q3 2024</td>
+                    <td>5 Countries</td>
+                </tr>
+                <tr>
+                    <td>Platform</td>
+                    <td>Q1 2025</td>
+                    <td>Global API</td>
+                </tr>
+                <tr>
+                    <td>IPO</td>
+                    <td>2027</td>
+                    <td>$1B Valuation</td>
+                </tr>
             </table>
-            
-            <p style="margin-top: 2rem; text-align: center; font-size: 1.1rem;">
-                <strong>Seeking:</strong> $2.4M seed round at $12M pre-money valuation<br>
-                <strong>Use of Funds:</strong> 60% engineering, 25% field ops, 15% partnerships
-            </p>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 9: TEAM
-         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- TEAM Section -->
     <section id="team" class="section">
-        <div class="stage-break">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 3rem; text-align: center;">
-                The Team
-            </h2>
+        <div class="right-card">
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Leadership</h2>
             
-            <div class="team-grid">
-                <div class="team-member">
-                    <div class="team-photo">AK</div>
-                    <div class="team-name">Dr. Amina Khatun</div>
-                    <div class="team-role">CEO & Co-Founder</div>
-                    <div class="team-bio">
-                        Former NASA JPL scientist. PhD Remote Sensing (MIT). 
-                        Led Landsat-9 flood algorithm team. Bangladesh native.
-                    </div>
-                </div>
-                
-                <div class="team-member">
-                    <div class="team-photo">RC</div>
-                    <div class="team-name">Rohan Chen</div>
-                    <div class="team-role">CTO & Co-Founder</div>
-                    <div class="team-bio">
-                        Ex-Google Brain. Built production ML for Google Flood Hub. 
-                        MS CS Stanford. 3x Kaggle Grandmaster (satellite imagery).
-                    </div>
-                </div>
-                
-                <div class="team-member">
-                    <div class="team-photo">SP</div>
-                    <div class="team-name">Dr. Sanjay Patel</div>
-                    <div class="team-role">Chief Scientist</div>
-                    <div class="team-bio">
-                        Hydrology expert. 15 years Bangladesh Water Development Board. 
-                        PhD IIT Delhi. Designed national river monitoring network.
-                    </div>
-                </div>
-                
-                <div class="team-member">
-                    <div class="team-photo">LM</div>
-                    <div class="team-name">Lisa Mbemba</div>
-                    <div class="team-role">Head of Deployment</div>
-                    <div class="team-bio">
-                        Former UNICEF program director. Led disaster response ops across 
-                        12 countries. Expert in last-mile community engagement.
-                    </div>
-                </div>
+            <div style="margin: 2rem 0;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Dr. Sarah Chen</h3>
+                <p style="opacity: 0.7; margin-bottom: 1rem;">CEO & Co-Founder</p>
+                <p>Former SpaceX ML Lead. PhD Stanford. 15 patents in satellite imagery processing.</p>
             </div>
             
-            <p style="margin-top: 3rem; text-align: center; opacity: 0.8;">
-                <strong>Advisors:</strong> Dr. Jennifer Arnold (Climate Advisor, World Bank) • 
-                Prof. Michael Kumar (Stanford Earth) • 
-                Sanjana Reddy (ex-VP, Swiss Re Climate Analytics)
-            </p>
+            <div style="margin: 2rem 0;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Rajesh Patel</h3>
+                <p style="opacity: 0.7; margin-bottom: 1rem;">CTO & Co-Founder</p>
+                <p>Ex-Google Earth Engine. MIT PhD. Built flood prediction systems for 3 governments.</p>
+            </div>
+            
+            <div style="margin: 2rem 0;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Prof. Ahmed Rahman</h3>
+                <p style="opacity: 0.7; margin-bottom: 1rem;">Chief Science Officer</p>
+                <p>30 years hydrology research. Author of 200+ papers. Bangladesh National Science Award.</p>
+            </div>
         </div>
     </section>
-    
-    <!-- ═══════════════════════════════════════════════════════════
-         SECTION 10: APPENDIX
-         ═══════════════════════════════════════════════════════════ -->
-    <section id="appendix" class="section">
-        <div class="stage-break">
-            <h2 style="font-size: var(--fs-h2); margin-bottom: 2rem; text-align: center;">
-                Technical Appendix
-            </h2>
+
+    <!-- APPENDIX Section -->
+    <section id="appendix" class="section stage-break">
+        <div class="center-content">
+            <h2>Technical Appendix</h2>
             
-            <div class="accordion-item">
-                <div class="accordion-header">
-                    Vision Transformer (ViT)
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-                    Neural network architecture treating images as sequences of patches. 
-                    Each 16×16 pixel patch becomes a token, processed by multi-head self-attention. 
-                    Excels at spatial context modeling—critical for flood boundary detection.
-                </div>
-            </div>
-            
-            <div class="accordion-item">
-                <div class="accordion-header">
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
                     SAR (Synthetic Aperture Radar)
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-                    Active microwave sensor that penetrates clouds and operates day/night. 
-                    Water surfaces appear dark (low backscatter) in SAR imagery, enabling 
-                    all-weather flood mapping. Sentinel-1 uses C-band (5.6 cm wavelength).
+                </button>
+                <div class="dropdown-content">
+                    <p>Active microwave imaging that penetrates clouds and operates day/night. 
+                    Sentinel-1 provides 10m resolution imagery every 6 days globally.</p>
                 </div>
             </div>
             
-            <div class="accordion-item">
-                <div class="accordion-header">
-                    Manning's Equation
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-                    Empirical formula relating channel flow velocity to roughness, hydraulic 
-                    radius, and slope: v = (1/n) × R^(2/3) × S^(1/2). Used as physics constraint 
-                    in loss function to penalize unrealistic flow predictions.
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    Vision Transformer (ViT)
+                </button>
+                <div class="dropdown-content">
+                    <p>Neural architecture that processes images as sequences of patches, 
+                    enabling superior understanding of spatial relationships in satellite imagery.</p>
                 </div>
             </div>
             
-            <div class="accordion-item">
-                <div class="accordion-header">
-                    DEM (Digital Elevation Model)
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-                    Raster dataset representing ground elevation. FloodSight uses SRTM 30m + 
-                    ALOS 12.5m fused DEM. Elevation gradients determine flow direction; 
-                    critical for validating that water doesn't flow uphill.
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    Physics-Informed Neural Networks
+                </button>
+                <div class="dropdown-content">
+                    <p>AI models that incorporate physical laws (fluid dynamics, terrain constraints) 
+                    directly into the learning process, ensuring predictions obey real-world physics.</p>
                 </div>
             </div>
             
-            <div class="accordion-item">
-                <div class="accordion-header">
-                    Monte Carlo Dropout
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-                    Uncertainty quantification technique. Randomly drops neurons during inference 
-                    (N=50 runs) to generate prediction ensemble. Variance across runs estimates 
-                    model confidence—high variance = low certainty.
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    Edge Computing Architecture
+                </button>
+                <div class="dropdown-content">
+                    <p>Distributed processing at satellite ground stations reduces latency from hours to minutes. 
+                    Each edge node runs optimized models on NVIDIA hardware for real-time inference.</p>
                 </div>
             </div>
-            
-            <div class="accordion-item">
-                <div class="accordion-header">
-                    NDWI (Normalized Difference Water Index)
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-                    Spectral index highlighting water: (Green - NIR) / (Green + NIR). 
-                    Values > 0.3 typically indicate open water. Derived from Sentinel-2 
-                    optical bands to complement SAR data during clear weather.
-                </div>
-            </div>
-            
-            <p style="margin-top: 3rem; text-align: center; opacity: 0.7; font-size: 0.9rem;">
-                For full technical whitepaper, model architecture diagrams, and validation studies, 
-                contact: <strong style="color: var(--accent);">tech@floodsight.ai</strong>
-            </p>
         </div>
     </section>
+
+    <!-- Three.js and GSAP Scripts -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
     
-    <!-- ═══════════════════════════════════════════════════════════
-         SCRIPTS: Three.js Scene + GSAP Timeline + UI Controllers
-         ═══════════════════════════════════════════════════════════ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/ScrollTrigger.min.js"></script>
     
-    <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-    
-    <script>
-        // ═══════════════════════════════════════════════════════════
-        // GLOBAL CONTEXT
-        // ═══════════════════════════════════════════════════════════
-        const ctx = {
-            renderer: null,
-            scene: null,
-            camera: null,
-            globe: null,
-            sat: null,
-            stars: null,
-            labels: []
-        };
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // ═══════════════════════════════════════════════════════════
-        // SCENE INITIALIZATION
-        // ═══════════════════════════════════════════════════════════
+        // Global context
+        const ctx = {};
+        
+        // Initialize Three.js Scene
         function initScene() {
             const canvas = document.getElementById('stage');
             
-            // Renderer
             ctx.renderer = new THREE.WebGLRenderer({
                 canvas,
-                antialias: window.devicePixelRatio < 2,
+                antialias: true,
                 alpha: true,
                 powerPreference: 'high-performance'
             });
             ctx.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             ctx.renderer.setSize(window.innerWidth, window.innerHeight);
-            ctx.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            ctx.renderer.toneMappingExposure = 1.2;
             
-            // Scene
             ctx.scene = new THREE.Scene();
-            ctx.scene.background = new THREE.Color('#000000');
-            ctx.scene.fog = new THREE.FogExp2(0x000000, 0.00008);
             
-            // Camera
             ctx.camera = new THREE.PerspectiveCamera(
                 50,
                 window.innerWidth / window.innerHeight,
@@ -1187,369 +828,311 @@ where:
             );
             ctx.camera.position.set(0, 0, 8000);
             
-            // Lights
-            const keyLight = new THREE.DirectionalLight(0xffffff, 2);
-            keyLight.position.set(5, 3, 5);
-            ctx.scene.add(keyLight);
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            ctx.scene.add(ambientLight);
             
-            const rimLight = new THREE.DirectionalLight(0x19f7ff, 0.8);
-            rimLight.position.set(-3, 1, -4);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            directionalLight.position.set(5, 3, 5);
+            ctx.scene.add(directionalLight);
+            
+            const rimLight = new THREE.DirectionalLight(0x19f7ff, 0.5);
+            rimLight.position.set(-5, 0, -5);
             ctx.scene.add(rimLight);
-            
-            const ambient = new THREE.AmbientLight(0x444444, 0.6);
-            ctx.scene.add(ambient);
             
             // Starfield
             const starsGeometry = new THREE.BufferGeometry();
-            const starPositions = [];
-            for (let i = 0; i < 6000; i++) {
-                starPositions.push(
-                    THREE.MathUtils.randFloatSpread(20000),
-                    THREE.MathUtils.randFloatSpread(20000),
-                    THREE.MathUtils.randFloatSpread(20000)
-                );
+            const starVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 50000;
+                const y = (Math.random() - 0.5) * 50000;
+                const z = (Math.random() - 0.5) * 50000;
+                starVertices.push(x, y, z);
             }
-            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            
             const starsMaterial = new THREE.PointsMaterial({
                 color: 0xffffff,
-                size: 10,
-                sizeAttenuation: false,
-                transparent: true,
-                opacity: 0.8
+                size: 20,
+                sizeAttenuation: true
             });
+            
             ctx.stars = new THREE.Points(starsGeometry, starsMaterial);
             ctx.scene.add(ctx.stars);
             
-            // Earth Globe
-            createEarth();
-            
-            // Satellite (placeholder)
-            createSatellite();
-            
-            // Resize handler
-            window.addEventListener('resize', onResize);
-            
-            // Animation loop
-            const clock = new THREE.Clock();
-            function animate() {
-                requestAnimationFrame(animate);
-                const t = clock.getElapsedTime();
-                
-                // Slow star drift
-                if (ctx.stars) ctx.stars.rotation.y = t * 0.008;
-                
-                // Earth rotation
-                if (ctx.globe) ctx.globe.rotation.y += 0.0008;
-                
-                // Satellite orbit
-                if (ctx.sat) {
-                    ctx.sat.rotation.y += 0.005;
-                    const orbitSpeed = t * 0.3;
-                    ctx.sat.position.x = Math.cos(orbitSpeed) * 2200;
-                    ctx.sat.position.z = Math.sin(orbitSpeed) * 2200;
-                    ctx.sat.position.y = Math.sin(orbitSpeed * 0.5) * 400;
-                }
-                
-                ctx.renderer.render(ctx.scene, ctx.camera);
-            }
-            animate();
-        }
-        
-        function createEarth() {
-            // Earth sphere (simplified - would use miniature.earth.js in production)
-            const earthGeometry = new THREE.SphereGeometry(1000, 64, 64);
-            
-            // Create texture with gradient (fallback for missing earth_day.jpg)
-            const canvas = document.createElement('canvas');
-            canvas.width = 2048;
-            canvas.height = 1024;
-            const context = canvas.getContext('2d');
-            const gradient = context.createLinearGradient(0, 0, 0, 1024);
-            gradient.addColorStop(0, '#1a4d7a');
-            gradient.addColorStop(0.5, '#2a6fa8');
-            gradient.addColorStop(1, '#1a3d5a');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 2048, 1024);
-            
-            // Add landmass simulation
-            context.fillStyle = '#2d5a3d';
-            for (let i = 0; i < 50; i++) {
-                const x = Math.random() * 2048;
-                const y = Math.random() * 1024;
-                const size = Math.random() * 300 + 100;
-                context.beginPath();
-                context.arc(x, y, size, 0, Math.PI * 2);
-                context.fill();
-            }
-            
-            const earthTexture = new THREE.CanvasTexture(canvas);
-            
+            // Earth
+            const earthGeometry = new THREE.SphereGeometry(2000, 64, 64);
             const earthMaterial = new THREE.MeshPhongMaterial({
-                map: earthTexture,
-                bumpScale: 0.05,
-                specular: new THREE.Color(0x333333),
+                color: 0x2233ff,
+                emissive: 0x112244,
                 shininess: 10,
-                emissive: new THREE.Color(0x112244),
-                emissiveIntensity: 0.1
+                wireframe: false
             });
             
-            ctx.globe = new THREE.Mesh(earthGeometry, earthMaterial);
-            ctx.scene.add(ctx.globe);
+            ctx.earth = new THREE.Mesh(earthGeometry, earthMaterial);
+            ctx.scene.add(ctx.earth);
             
             // Add atmosphere glow
-            const atmosphereGeometry = new THREE.SphereGeometry(1020, 64, 64);
-            const atmosphereMaterial = new THREE.ShaderMaterial({
-                transparent: true,
-                side: THREE.BackSide,
-                vertexShader: `
-                    varying vec3 vNormal;
-                    void main() {
-                        vNormal = normalize(normalMatrix * normal);
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                fragmentShader: `
-                    varying vec3 vNormal;
-                    void main() {
-                        float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 2.0);
-                        gl_FragColor = vec4(0.1, 0.6, 0.9, 1.0) * intensity;
-                    }
-                `
-            });
-            const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-            ctx.globe.add(atmosphere);
-            
-            // Add Bangladesh highlight (approximate location)
-            addCountryHighlight(23.7, 90.4);
-        }
-        
-        function addCountryHighlight(lat, lon) {
-            // Convert lat/lon to 3D position on sphere
-            const phi = (90 - lat) * (Math.PI / 180);
-            const theta = (lon + 180) * (Math.PI / 180);
-            const radius = 1005;
-            
-            const x = -(radius * Math.sin(phi) * Math.cos(theta));
-            const y = radius * Math.cos(phi);
-            const z = radius * Math.sin(phi) * Math.sin(theta);
-            
-            // Pulsing marker
-            const markerGeometry = new THREE.SphereGeometry(30, 16, 16);
-            const markerMaterial = new THREE.MeshBasicMaterial({
+            const atmosphereGeometry = new THREE.SphereGeometry(2100, 64, 64);
+            const atmosphereMaterial = new THREE.MeshBasicMaterial({
                 color: 0x19f7ff,
                 transparent: true,
-                opacity: 0.7
+                opacity: 0.1,
+                side: THREE.BackSide
             });
-            const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-            marker.position.set(x, y, z);
-            ctx.globe.add(marker);
+            const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+            ctx.earth.add(atmosphere);
             
-            // Animate pulse
-            gsap.to(marker.scale, {
-                x: 1.5,
-                y: 1.5,
-                z: 1.5,
-                duration: 1.5,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut'
-            });
-            
-            gsap.to(markerMaterial, {
-                opacity: 0.3,
-                duration: 1.5,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut'
-            });
-        }
-        
-        function createSatellite() {
-            // Simplified satellite (box placeholder for sentinel.glb)
-            const group = new THREE.Group();
-            
-            // Main body
-            const bodyGeometry = new THREE.BoxGeometry(40, 60, 40);
-            const bodyMaterial = new THREE.MeshStandardMaterial({
+            // Satellite (simplified cube for now)
+            const satGeometry = new THREE.BoxGeometry(100, 100, 200);
+            const satMaterial = new THREE.MeshPhongMaterial({
                 color: 0xcccccc,
-                metalness: 0.8,
-                roughness: 0.2
+                emissive: 0x19f7ff,
+                emissiveIntensity: 0.2
             });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            group.add(body);
+            ctx.satellite = new THREE.Mesh(satGeometry, satMaterial);
+            ctx.satellite.position.set(0, 0, 3500);
+            ctx.scene.add(ctx.satellite);
             
             // Solar panels
-            const panelGeometry = new THREE.BoxGeometry(120, 40, 2);
-            const panelMaterial = new THREE.MeshStandardMaterial({
-                color: 0x1a3d7a,
-                metalness: 0.5,
-                roughness: 0.3
+            const panelGeometry = new THREE.PlaneGeometry(400, 150);
+            const panelMaterial = new THREE.MeshPhongMaterial({
+                color: 0x000033,
+                emissive: 0x000066,
+                side: THREE.DoubleSide
             });
-            const panelLeft = new THREE.Mesh(panelGeometry, panelMaterial);
-            panelLeft.position.x = -80;
-            group.add(panelLeft);
             
-            const panelRight = new THREE.Mesh(panelGeometry, panelMaterial);
-            panelRight.position.x = 80;
-            group.add(panelRight);
+            const leftPanel = new THREE.Mesh(panelGeometry, panelMaterial);
+            leftPanel.position.x = -250;
+            ctx.satellite.add(leftPanel);
             
-            // Position near earth
-            group.position.set(0, 0, 2200);
-            group.scale.set(1, 1, 1);
+            const rightPanel = new THREE.Mesh(panelGeometry, panelMaterial);
+            rightPanel.position.x = 250;
+            ctx.satellite.add(rightPanel);
             
-            ctx.sat = group;
-            ctx.scene.add(ctx.sat);
+            // Add flood zone on Earth (Bangladesh region)
+            const floodGeometry = new THREE.CircleGeometry(200, 32);
+            const floodMaterial = new THREE.MeshBasicMaterial({
+                color: 0x0077ff,
+                transparent: true,
+                opacity: 0.6,
+                side: THREE.DoubleSide
+            });
+            ctx.floodZone = new THREE.Mesh(floodGeometry, floodMaterial);
+            ctx.floodZone.position.set(800, 1200, 1600); // Position on Earth surface
+            ctx.earth.add(ctx.floodZone);
+            
+            // Pulse effect for flood zone
+            ctx.pulseRing = new THREE.Mesh(
+                new THREE.RingGeometry(180, 220, 32),
+                new THREE.MeshBasicMaterial({
+                    color: 0x19f7ff,
+                    transparent: true,
+                    opacity: 0.8,
+                    side: THREE.DoubleSide
+                })
+            );
+            ctx.pulseRing.position.copy(ctx.floodZone.position);
+            ctx.earth.add(ctx.pulseRing);
+            
+            // Window resize handler
+            window.addEventListener('resize', () => {
+                ctx.camera.aspect = window.innerWidth / window.innerHeight;
+                ctx.camera.updateProjectionMatrix();
+                ctx.renderer.setSize(window.innerWidth, window.innerHeight);
+            });
         }
         
-        function onResize() {
-            ctx.camera.aspect = window.innerWidth / window.innerHeight;
-            ctx.camera.updateProjectionMatrix();
-            ctx.renderer.setSize(window.innerWidth, window.innerHeight);
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.001;
+            
+            // Rotate earth
+            if (ctx.earth) {
+                ctx.earth.rotation.y = time * 0.05;
+            }
+            
+            // Rotate satellite
+            if (ctx.satellite) {
+                ctx.satellite.rotation.y = time * 0.1;
+                ctx.satellite.rotation.z = Math.sin(time * 0.5) * 0.1;
+            }
+            
+            // Animate stars
+            if (ctx.stars) {
+                ctx.stars.rotation.y = time * 0.01;
+            }
+            
+            // Pulse flood zone
+            if (ctx.pulseRing) {
+                const scale = 1 + Math.sin(time * 2) * 0.2;
+                ctx.pulseRing.scale.set(scale, scale, 1);
+                ctx.pulseRing.material.opacity = 0.8 - Math.sin(time * 2) * 0.4;
+            }
+            
+            ctx.renderer.render(ctx.scene, ctx.camera);
         }
         
-        // ═══════════════════════════════════════════════════════════
-        // GSAP SCROLL TIMELINE
-        // ═══════════════════════════════════════════════════════════
+        // Initialize GSAP ScrollTrigger Timeline
         function buildTimeline() {
             gsap.registerPlugin(ScrollTrigger);
             
-            // Main scroll timeline
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+            }, 1000);
+            
+            // Animate hero text
+            gsap.to('.hero-line', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                stagger: 0.2,
+                delay: 1.2
+            });
+            
+            // Create master timeline
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: 'body',
                     start: 'top top',
-                    end: 'bottom bottom',
-                    scrub: 1
+                    end: '+=10000',
+                    scrub: 1,
+                    pin: false
                 }
             });
             
-            // S1: Hero - Zoom in from deep space
+            // Camera movements through sections
             tl.to(ctx.camera.position, {
-                z: 3500,
-                duration: 3,
-                ease: 'power2.out'
-            }, 0);
+                z: 4000,
+                duration: 2,
+                ease: 'power2.inOut'
+            }, 'start')
             
-            // S2: Stakes - Orbit around earth
-            tl.to(ctx.camera.position, {
-                x: 1500,
-                y: 800,
-                z: 2800,
+            // Stakes section - rotate around Earth
+            .to(ctx.camera.position, {
+                x: 2000,
+                y: 1000,
+                z: 3000,
                 duration: 3,
                 ease: 'sine.inOut'
-            }, 3);
+            }, '+=1')
             
-            // S3: Solution - Front view
-            tl.to(ctx.camera.position, {
-                x: 0,
-                y: 400,
-                z: 2500,
-                duration: 2,
-                ease: 'power1.inOut'
-            }, 6);
-            
-            // S4: Tech - Zoom to satellite
-            tl.to(ctx.camera.position, {
-                x: 800,
-                y: 300,
-                z: 1800,
-                duration: 2.5
-            }, 8);
-            
-            // S5: Blueprint - Zoom to Bangladesh
-            tl.to(ctx.camera.position, {
-                x: -200,
-                y: 150,
-                z: 1400,
-                duration: 2
-            }, 10.5);
-            
-            // S6: Deployment - Pull back
-            tl.to(ctx.camera.position, {
-                x: 0,
-                y: 600,
-                z: 3000,
-                duration: 2
-            }, 12.5);
-            
-            // S7-9: Wide shots
-            tl.to(ctx.camera.position, {
+            // Solution section - focus on satellite
+            .to(ctx.camera.position, {
                 x: -1000,
-                y: 1200,
-                z: 4000,
-                duration: 3
-            }, 14.5);
+                y: 500,
+                z: 4500,
+                duration: 3,
+                ease: 'power2.inOut'
+            }, '+=1')
             
-            // S10: Final - Return to space view
-            tl.to(ctx.camera.position, {
+            // Tech section - pull back for overview
+            .to(ctx.camera.position, {
                 x: 0,
                 y: 0,
                 z: 6000,
+                duration: 2,
+                ease: 'power2.out'
+            }, '+=1')
+            
+            // Deployment - zoom to Bangladesh
+            .to(ctx.camera.position, {
+                x: 800,
+                y: 1200,
+                z: 2500,
+                duration: 3,
+                ease: 'power3.inOut'
+            }, '+=1')
+            
+            // Impact - dramatic pullback
+            .to(ctx.camera.position, {
+                x: 0,
+                y: 2000,
+                z: 8000,
+                duration: 4,
+                ease: 'expo.out'
+            }, '+=1')
+            
+            // Final sections
+            .to(ctx.camera.position, {
+                x: 0,
+                y: 0,
+                z: 10000,
                 duration: 3,
                 ease: 'power2.inOut'
-            }, 17.5);
+            }, '+=1');
             
-            // Dim canvas on text-heavy sections
+            // Venturi labels appear based on scroll
+            ScrollTrigger.create({
+                trigger: '#stakes',
+                start: 'top center',
+                onEnter: () => {
+                    document.getElementById('label-bangladesh').classList.add('active');
+                    positionLabel('label-bangladesh', 800, 1200, 1600);
+                }
+            });
+            
+            ScrollTrigger.create({
+                trigger: '#solution',
+                start: 'top center',
+                onEnter: () => {
+                    document.getElementById('label-satellite').classList.add('active');
+                    positionLabel('label-satellite', 0, 0, 3500);
+                }
+            });
+            
             ScrollTrigger.create({
                 trigger: '#tech',
                 start: 'top center',
-                end: 'bottom center',
-                onEnter: () => document.getElementById('stage').classList.add('dimmed'),
-                onLeaveBack: () => document.getElementById('stage').classList.remove('dimmed')
+                onEnter: () => {
+                    document.getElementById('label-model').classList.add('active');
+                }
             });
             
             ScrollTrigger.create({
-                trigger: '#investment',
+                trigger: '#deployment',
                 start: 'top center',
-                end: 'bottom center',
-                onEnter: () => document.getElementById('stage').classList.add('dimmed'),
-                onLeaveBack: () => document.getElementById('stage').classList.remove('dimmed')
-            });
-            
-            ScrollTrigger.create({
-                trigger: '#team',
-                start: 'top center',
-                end: 'bottom center',
-                onEnter: () => document.getElementById('stage').classList.add('dimmed'),
-                onLeaveBack: () => document.getElementById('stage').classList.remove('dimmed')
-            });
-            
-            ScrollTrigger.create({
-                trigger: '#appendix',
-                start: 'top center',
-                end: 'bottom center',
-                onEnter: () => document.getElementById('stage').classList.add('dimmed'),
-                onLeaveBack: () => document.getElementById('stage').classList.remove('dimmed')
+                onEnter: () => {
+                    document.getElementById('label-flood').classList.add('active');
+                    positionLabel('label-flood', 850, 1250, 1650);
+                }
             });
         }
         
-        // ═══════════════════════════════════════════════════════════
-        // UI CONTROLLERS
-        // ═══════════════════════════════════════════════════════════
-        
-        // Odometer counters
-        function initOdometers() {
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Position Venturi labels in 3D space
+        function positionLabel(labelId, x, y, z) {
+            const label = document.getElementById(labelId);
+            const vector = new THREE.Vector3(x, y, z);
+            vector.project(ctx.camera);
             
+            const widthHalf = window.innerWidth / 2;
+            const heightHalf = window.innerHeight / 2;
+            
+            label.style.left = (vector.x * widthHalf + widthHalf) + 'px';
+            label.style.top = (-vector.y * heightHalf + heightHalf) + 'px';
+        }
+        
+        // Initialize odometer counters
+        function initOdometers() {
             document.querySelectorAll('.odometer').forEach(el => {
-                const targetVal = parseInt(el.dataset.val) || 0;
-                
-                if (reducedMotion) {
-                    el.textContent = targetVal.toLocaleString();
-                    return;
-                }
+                const target = parseInt(el.dataset.val);
+                const startVal = 0;
                 
                 ScrollTrigger.create({
                     trigger: el,
                     start: 'top 80%',
+                    once: true,
                     onEnter: () => {
                         gsap.to(el, {
-                            textContent: targetVal,
+                            innerHTML: target,
                             duration: 2,
                             ease: 'power1.out',
-                            snap: { textContent: 1 },
+                            snap: { innerHTML: 1 },
                             onUpdate: function() {
-                                el.textContent = Math.round(this.targets()[0].textContent).toLocaleString();
+                                el.textContent = Math.floor(el.innerHTML).toLocaleString();
                             }
                         });
                     }
@@ -1557,76 +1140,28 @@ where:
             });
         }
         
-        // Accordion functionality
-        function initAccordions() {
-            document.querySelectorAll('.accordion-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const item = header.parentElement;
-                    const wasActive = item.classList.contains('active');
-                    
-                    // Close all
-                    document.querySelectorAll('.accordion-item').forEach(i => {
-                        i.classList.remove('active');
-                    });
-                    
-                    // Open clicked (unless it was already open)
-                    if (!wasActive) {
-                        item.classList.add('active');
-                    }
-                });
-            });
-        }
+        // Initialize everything
+        initScene();
+        animate();
+        buildTimeline();
+        initOdometers();
         
-        // Card reveal animations
-        function initCardAnimations() {
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reducedMotion) return;
-            
-            gsap.utils.toArray('.left-card, .right-card, .stage-break').forEach(card => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top 85%',
-                        end: 'top 60%',
-                        scrub: 0.5
-                    },
-                    y: 80,
-                    opacity: 0,
-                    scale: 0.95
-                });
-            });
-        }
+        // Dropdown functionality
+        window.toggleDropdown = function(button) {
+            const dropdown = button.closest('.dropdown');
+            dropdown.classList.toggle('open');
+        };
         
-        // ═══════════════════════════════════════════════════════════
-        // INITIALIZATION
-        // ═══════════════════════════════════════════════════════════
-        window.addEventListener('DOMContentLoaded', () => {
-            // Check for reduced motion
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            
-            // Initialize scene
-            initScene();
-            
-            // Initialize GSAP timeline (skip scrub if reduced motion)
-            if (!reducedMotion) {
-                buildTimeline();
-            }
-            
-            // Initialize UI
-            initOdometers();
-            initAccordions();
-            initCardAnimations();
-            
-            // Hide loading screen
+        // Copy code functionality
+        window.copyCode = function(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('code').textContent;
+            navigator.clipboard.writeText(code);
+            button.textContent = 'COPIED!';
             setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-            }, 1000);
-        });
-        
-        // SEO / No-JS fallback
-        if (!window.WebGLRenderingContext) {
-            document.body.innerHTML = '<noscript><div style="padding: 2rem; text-align: center;"><h1>FloodSight requires WebGL</h1><p>Please use a modern browser to view this experience.</p></div></noscript>';
-        }
+                button.textContent = 'COPY';
+            }, 2000);
+        };
     </script>
 </body>
 </html>
